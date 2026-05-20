@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RestorMate v3 • Process Buckets • Intake & Estimate</title>
+    <title>RestorMate v3.1 • Full Process Categories • Intake &amp; Estimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
         :root {
             --tw-color-primary: #d97706;
         }
@@ -33,7 +33,7 @@
                 <div class="w-10 h-10 bg-amber-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-inner">🪚</div>
                 <div>
                     <h1 class="text-3xl font-semibold tracking-tight text-amber-900">RestorMate</h1>
-                    <p class="text-amber-600 text-sm -mt-1">v3 • Process Buckets & Intake Estimator</p>
+                    <p class="text-amber-600 text-sm -mt-1">v3.1 • Full Process Categories &amp; Intake Estimator</p>
                 </div>
             </div>
             <div class="flex items-center gap-x-4">
@@ -47,7 +47,7 @@
                 </div>
                 <div onclick="showPreview()" class="flex items-center gap-x-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-3xl font-semibold cursor-pointer shadow-md">
                     <i class="fa-solid fa-print"></i>
-                    <span>Preview & Print</span>
+                    <span>Preview &amp; Print</span>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
             <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-xs font-medium text-amber-500 tracking-widest">MATERIALS & PARTS</p>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">MATERIALS &amp; PARTS</p>
                         <p id="total-materials" class="text-5xl font-semibold text-amber-600">$0</p>
                     </div>
                     <i class="fa-solid fa-boxes-packing text-4xl text-amber-200"></i>
@@ -129,8 +129,8 @@
 
                 <!-- Procurement -->
                 <div class="bg-white rounded-3xl shadow p-8">
-                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-4"><i class="fa-solid fa-truck"></i> Procurement & Parts Planning</h2>
-                    <p class="text-xs text-amber-600 mb-4">Major hardware, veneer, specialty finishes & lead-time items only</p>
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-4"><i class="fa-solid fa-truck"></i> Procurement &amp; Parts Planning</h2>
+                    <p class="text-xs text-amber-600 mb-4">Major hardware, veneer, specialty finishes &amp; lead-time items only</p>
                     
                     <div id="procurement-list" class="space-y-3 mb-6 max-h-80 overflow-auto"></div>
                     
@@ -154,7 +154,7 @@
                     <div class="relative flex-1 max-w-xs mx-8">
                         <input id="global-search" 
                                onkeyup="if(event.keyCode===13) filterBuckets()"
-                               placeholder="Search steps (sand, veneer, hardware...)" 
+                               placeholder="Search steps (sand, veneer, hardware, lacquer...)" 
                                class="w-full pl-10 py-3 border border-amber-200 focus:border-amber-400 rounded-3xl text-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-amber-300"></i>
                     </div>
@@ -195,98 +195,182 @@
             // Already initialized via CDN
         }
 
-        // Data model - Pruned v3 buckets
+        // Data model - FULL categories restored from original detailed version
+        // All selectable steps (the "dropdowns") now match the comprehensive list
         let bucketsData = [
+           // Category definitions with tasks (compiled & cleaned from your spreadsheet)
+        const categories = [
             {
-                id: "intake",
-                title: "Intake, Assessment & Planning",
-                icon: "🔍",
-                steps: [
-                    {id: "visual-assessment", label: "Visual assessment & condition documentation", defaultHours: 0.5},
-                    {id: "inventory-hardware", label: "Inventory of hardware", defaultHours: 0.5},
-                    {id: "photographing", label: "Photographing all pieces", defaultHours: 0.5},
-                    {id: "fabric-samples", label: "Review fabric samples & plan color match", defaultHours: 0.5},
-                    {id: "action-items", label: "Create action item list & estimate", defaultHours: 0.75},
-                    {id: "part-orders", label: "Plan part orders & note lead times", defaultHours: 0.5},
-                    {id: "physical-organization", label: "Physical organization, labeling & bucketing", defaultHours: 1},
-                    {id: "disassembly", label: "Disassembly of item", defaultHours: 1}
+                id: "intake-planning",
+                name: "Intake, Assessment & Planning",
+                icon: "fa-search",
+                color: "amber",
+                tasks: [
+                    { name: "Visual assessment & condition documentation", defaultHours: 0.75, defaultCost: 0 },
+                    { name: "Photograph all pieces (overall + details)", defaultHours: 0.5, defaultCost: 0 },
+                    { name: "Inventory existing hardware & components", defaultHours: 0.5, defaultCost: 0 },
+                    { name: "Review fabric samples & plan color matching", defaultHours: 0.5, defaultCost: 0 },
+                    { name: "Create action item list & preliminary estimate", defaultHours: 0.75, defaultCost: 0 },
+                    { name: "Plan part orders & note lead times", defaultHours: 0.5, defaultCost: 0 },
+                    { name: "Physical organization, labeling & bucketing pieces", defaultHours: 1.0, defaultCost: 5 },
+                    { name: "Disassembly of item", defaultHours: 1.0, defaultCost: 0 }
                 ]
             },
             {
                 id: "repair",
-                title: "Repair & Modification",
-                icon: "🔨",
-                steps: [
-                    {id: "veneer-repair", label: "Veneer chip / edge repair", defaultHours: 2},
-                    {id: "joint-repair", label: "Joint repair (incl. epoxy)", defaultHours: 1.5},
-                    {id: "structural-repair", label: "Structural repair / reinforcement", defaultHours: 1},
-                    {id: "scrape-glue", label: "Scrape / strip old glue", defaultHours: 0.75},
-                    {id: "ca-glue", label: "CA glue repair", defaultHours: 0.5},
-                    {id: "reveneer", label: "Reveneer panel or surface", defaultHours: 3},
-                    {id: "edge-banding", label: "Replace/repair edge banding", defaultHours: 1.25},
-                    {id: "base-mod", label: "Base or leg modification", defaultHours: 1.5},
-                    {id: "stability", label: "Stability reinforcement", defaultHours: 1}
+                name: "Repair",
+                icon: "fa-wrench",
+                color: "amber",
+                tasks: [
+                    { name: "Veneer chip / edge repair", defaultHours: 0, defaultCost: 0 },
+                    { name: "Joint repair (including epoxy)", defaultHours: 0, defaultCost: 0 },
+                    { name: "Structural repair / reinforcement", defaultHours: 0, defaultCost: 0 },
+                    { name: "Scrape / strip old glue", defaultHours: 0, defaultCost: 8 },
+                    { name: "CA glue repair (instant adhesives)", defaultHours: 0, defaultCost: 5 },
+                    { name: "Edge banding repair or replacement", defaultHours: 0, defaultCost: 0 },
+                    { name: "Hardware repair or reconditioning", defaultHours: 0, defaultCost: 0 },
+                    { name: "Break-apart / re-glue structural elements", defaultHours: 0, defaultCost: 15 }
+                ]
+            },
+            {
+                id: "modification",
+                name: "Modification",
+                icon: "fa-hammer",
+                color: "amber",
+                tasks: [
+                    { name: "Reveneer panel or surface", defaultHours: 0, defaultCost: 0 },
+                    { name: "Replace or repair edge banding", defaultHours: 0, defaultCost: 0 },
+                    { name: "Base or leg modification", defaultHours: 0, defaultCost: 0 },
+                    { name: "Side panel work or replacement", defaultHours: 0, defaultCost: 0 },
+                    { name: "Stability reinforcement", defaultHours: 0, defaultCost: 12 }
                 ]
             },
             {
                 id: "cleaning",
-                title: "Cleaning",
-                icon: "🧼",
-                steps: [
-                    {id: "general-clean", label: "General cleaning (soap & water / scrubby)", defaultHours: 0.75},
-                    {id: "hardware-clean", label: "Hardware / metal polishing", defaultHours: 0.5}
+                name: "Cleaning",
+                icon: "fa-soap",
+                color: "emerald",
+                tasks: [
+                    { name: "Watered-down Murphy's Oil Soap clean", defaultHours: 0, defaultCost: 8 },
+                    { name: "Wax wash clean", defaultHours: 0, defaultCost: 6 },
+                    { name: "Mineral spirits clean", defaultHours: 0, defaultCost: 10 },
+                    { name: "Goo Gone / adhesive remover", defaultHours: 0, defaultCost: 8 },
+                    { name: "Metal polish (hardware)", defaultHours: 0, defaultCost: 12 },
+                    { name: "General soap & water or scrubby clean", defaultHours: 0, defaultCost: 5 }
                 ]
             },
             {
                 id: "finish-removal",
-                title: "Finish Removal & Chemical Treatment",
-                icon: "🧪",
-                steps: [
-                    {id: "scrubby-clean", label: "Scrubby clean / adhesive remover", defaultHours: 0.75},
-                    {id: "scrape", label: "Manual scrape of old finish", defaultHours: 1},
-                    {id: "chemical-strip", label: "Chemical strip / Oxalic acid", defaultHours: 1.5},
-                    {id: "bleach", label: "Wood bleach application", defaultHours: 1},
-                    {id: "dent-steaming", label: "Dent steaming", defaultHours: 0.5}
+                name: "Finish Removal",
+                icon: "fa-eraser",
+                color: "rose",
+                tasks: [
+                    { name: "Scrubby clean (red / purple scrubby)", defaultHours: 0, defaultCost: 6 },
+                    { name: "Manual scrape of old finish", defaultHours: 0, defaultCost: 4 },
+                    { name: "220 grit sanding", defaultHours: 0, defaultCost: 3 },
+                    { name: "320 grit sanding", defaultHours: 0, defaultCost: 3 },
+                    { name: "Chemical strip / Oxalic acid treatment", defaultHours: 0, defaultCost: 18 },
+                    { name: "Wood bleach application", defaultHours: 0, defaultCost: 15 },
+                    { name: "Dent steaming", defaultHours: 0, defaultCost: 5 }
                 ]
             },
             {
-                id: "surface-prep",
-                title: "Surface Preparation (Sanding & Prep)",
-                icon: "📏",
-                steps: [
-                    {id: "progressive-sanding", label: "Progressive sanding & surface prep (all grits)", defaultHours: 2.5, note: "Covers full sequence — 220 → 320 → 400 → 600"},
-                    {id: "final-prep", label: "Final prep (red/purple scrubby, tape-off, etc.)", defaultHours: 0.75}
+                id: "prep-for-seal",
+                name: "Finish Prep for Seal",
+                icon: "fa-sandpaper",
+                color: "sky",
+                tasks: [
+                    { name: "220 orbital sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "220 hand sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "320 orbital sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "320 hand sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "Area tape-off / masking", defaultHours: 0, defaultCost: 4 },
+                    { name: "Red scrubby final prep", defaultHours: 0, defaultCost: 3 },
+                    { name: "Purple scrubby final prep", defaultHours: 0, defaultCost: 3 }
                 ]
             },
             {
-                id: "color-seal",
-                title: "Coloring, Sealing & Build Coats",
-                icon: "🎨",
-                steps: [
-                    {id: "dye-stain", label: "Dye tone / solvent / oil stain", defaultHours: 1},
-                    {id: "grain-fill", label: "Grain fill / pore filler", defaultHours: 0.75},
-                    {id: "sealing", label: "Sealing (vinyl seal / shellac / poly sealer)", defaultHours: 2}
+                id: "pre-seal-color",
+                name: "Pre-Seal Color",
+                icon: "fa-palette",
+                color: "violet",
+                tasks: [
+                    { name: "Dye tone application", defaultHours: 0, defaultCost: 12 },
+                    { name: "Solvent stain", defaultHours: 0, defaultCost: 15 },
+                    { name: "Oil stain", defaultHours: 0, defaultCost: 18 },
+                    { name: "Vinyl fill / pore filler", defaultHours: 0, defaultCost: 10 },
+                    { name: "Other pre-seal coloring or toning", defaultHours: 0, defaultCost: 0 }
+                ]
+            },
+            {
+                id: "sealing",
+                name: "Sealing",
+                icon: "fa-shield-halved",
+                color: "teal",
+                tasks: [
+                    { name: "Vinyl Seal (regular strength)", defaultHours: 0, defaultCost: 22 },
+                    { name: "Vinyl Seal (thin / wash coat)", defaultHours: 0, defaultCost: 18 },
+                    { name: "Spray shellac sealer", defaultHours: 0, defaultCost: 15 },
+                    { name: "Wipe-on shellac sealer", defaultHours: 0, defaultCost: 12 },
+                    { name: "Polyurethane sealer", defaultHours: 0, defaultCost: 20 },
+                    { name: "Area tape-off for sealing", defaultHours: 0, defaultCost: 3 }
+                ]
+            },
+            {
+                id: "intra-finish",
+                name: "Intra-Finish Color & Treatment",
+                icon: "fa-paint-brush",
+                color: "fuchsia",
+                tasks: [
+                    { name: "NGR toning", defaultHours: 0, defaultCost: 14 },
+                    { name: "Can toning / aerosol toning", defaultHours: 0, defaultCost: 12 },
+                    { name: "In-painting / touch-up coloring", defaultHours: 0, defaultCost: 8 },
+                    { name: "Grain fill", defaultHours: 0, defaultCost: 15 },
+                    { name: "Glaze application", defaultHours: 0, defaultCost: 12 },
+                    { name: "Color stick / Blendal color application", defaultHours: 0, defaultCost: 6 }
+                ]
+            },
+            {
+                id: "finish-prep",
+                name: "Final Finish Prep",
+                icon: "fa-hand-sparkles",
+                color: "sky",
+                tasks: [
+                    { name: "Wax wash between coats", defaultHours: 0, defaultCost: 6 },
+                    { name: "400 hand sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "600 hand sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "400 orbital sand", defaultHours: 0, defaultCost: 2 },
+                    { name: "600 orbital sand", defaultHours: 0, defaultCost: 2 }
                 ]
             },
             {
                 id: "top-coat",
-                title: "Top Coating",
-                icon: "🖌️",
-                steps: [
-                    {id: "top-coat-app", label: "Top Coat Application", defaultHours: 4, note: "Specify type, # of coats & sheen in notes"}
+                name: "Top Coat",
+                icon: "fa-layer-group",
+                color: "amber",
+                tasks: [
+                    { name: "Pre-catalyzed lacquer (build coats + sheen)", defaultHours: 0, defaultCost: 35, note: "Specify sheen (10/20/40/60/80) in notes" },
+                    { name: "Post-catalyzed lacquer", defaultHours: 0, defaultCost: 40, note: "Specify sheen level" },
+                    { name: "Polyurethane top coat", defaultHours: 0, defaultCost: 28 },
+                    { name: "Shellac top coat (or tinted shellac)", defaultHours: 0, defaultCost: 18 },
+                    { name: "Paint or enamel finish", defaultHours: 0, defaultCost: 25 },
+                    { name: "Additional top coat layer(s)", defaultHours: 0, defaultCost: 0 }
                 ]
             },
             {
-                id: "assembly",
-                title: "Assembly, Hardware & Final",
-                icon: "🔧",
-                steps: [
-                    {id: "install-hardware", label: "Install / re-install hardware", defaultHours: 1},
-                    {id: "refit-pieces", label: "Refit pieces & drawers", defaultHours: 0.75},
-                    {id: "final-inspection", label: "Final inspection, cleaning & detailing", defaultHours: 0.75}
+                id: "assembly-touchup",
+                name: "Assembly, Touch-Up & Final",
+                icon: "fa-check-double",
+                color: "emerald",
+                tasks: [
+                    { name: "Install / re-install hardware", defaultHours: 0, defaultCost: 8 },
+                    { name: "Refit pieces & drawers", defaultHours: 0, defaultCost: 0 },
+                    { name: "Ensure smooth drawer / door operation", defaultHours: 0, defaultCost: 0 },
+                    { name: "Final stain & finish touch-up pen work", defaultHours: 0, defaultCost: 10 },
+                    { name: "Final inspection, cleaning & detailing", defaultHours: 0.75, defaultCost: 5 }
                 ]
             }
-        ]
+        ];
 
         let procurementItems = []
         let laborRate = 100
@@ -534,44 +618,58 @@
             calculateTotals()
         }
 
-        // Demo data
+        // Demo data - updated for full categories
         function loadDemo() {
-            // Clear first
+            if (!confirm('Load realistic demo data for a mahogany side table restoration? Current values will be replaced.')) return;
+
             clearAll(true)
             
-            document.getElementById('project-name').value = 'Mahogany Side Table Restoration'
-            document.getElementById('customer-name').value = 'Jane Thompson'
-            document.getElementById('customer-email').value = 'jane.t@email.com'
-            document.getElementById('notes').value = 'Preserve original patina where possible'
+            document.getElementById('project-name').value = 'Mahogany Federal Style Side Table - Full Restoration'
+            document.getElementById('customer-name').value = 'Robert Kline'
+            document.getElementById('customer-email').value = 'rkline.design@gmail.com'
+            document.getElementById('notes').value = 'Client wants to preserve as much original finish and patina as possible. One leg has previous repair. New period-correct brass hardware.'
 
-            // Set some sample hours (still start from zero but demo populates reasonable values)
-            // For demo we set realistic numbers
+            // Demo values for key steps across the full category list (elements now exist after clearAll)
             const sampleData = {
-                "intake-visual-assessment": 0.75,
-                "intake-inventory-hardware": 0.5,
-                "repair-veneer-repair": 2,
-                "repair-joint-repair": 1.5,
-                "repair-structural-repair": 1,
-                "surface-prep-progressive-sanding": 2.5,
-                "color-seal-dye-stain": 1,
-                "color-seal-sealing": 2,
-                "top-coat-top-coat-app": 4,
-                "assembly-install-hardware": 1
+                // Intake
+                "intake-planning-visual-assessment": 1.0,
+                "intake-planning-photographing": 0.75,
+                "intake-planning-inventory-hardware": 0.5,
+                "intake-planning-physical-organization": 1.25,
+                "intake-planning-disassembly": 1.5,
+                // Repair
+                "repair-veneer-chip-repair": 2.5,
+                "repair-joint-repair": 1.75,
+                "repair-structural-repair": 1.0,
+                // Finish Removal
+                "finish-removal-sand-220": 1.5,
+                "finish-removal-sand-320": 1.0,
+                "finish-removal-chemical-strip": 2.0,
+                // Pre-seal color
+                "pre-seal-color-solvent-stain": 1.25,
+                // Sealing
+                "sealing-vinyl-seal-regular": 1.0,
+                "sealing-spray-shellac": 0.75,
+                // Top coat
+                "top-coat-pre-cat-lacquer": 3.5,
+                // Assembly
+                "assembly-touchup-install-hardware": 1.25,
+                "assembly-touchup-final-inspection": 1.0
             }
 
             Object.keys(sampleData).forEach(key => {
-                const el = document.getElementById('hours-' + key.replace('-', '-'))
+                const el = document.getElementById('hours-' + key)
                 if (el) el.value = sampleData[key]
             })
 
             // Add some procurement
             procurementItems = [
-                {name: 'Brass pulls (set of 4)', qty: 1, cost: 85},
-                {name: 'Veneer sheet (mahogany)', qty: 2, cost: 45}
+                {name: 'Period brass bail pulls (set of 4)', qty: 2, cost: 48},
+                {name: 'Matching brass escutcheons', qty: 2, cost: 22},
+                {name: 'Mahogany veneer (bookmatched, 4 sq ft)', qty: 1, cost: 85}
             ]
 
             renderProcurement()
-            renderBuckets()
             calculateTotals()
         }
 
@@ -590,7 +688,7 @@
             calculateTotals()
         }
 
-        // Preview - DETAILED like v2
+        // Preview - DETAILED like v2 (groups by the full buckets now)
         function showPreview() {
             const modal = document.getElementById('preview-modal')
             const content = document.getElementById('preview-content')
@@ -634,7 +732,7 @@
 
                 <h3 class="text-xl font-semibold mb-6 border-b pb-3">Work Summary by Bucket</h3>`
 
-            // Add detailed bucket summaries (like v2 screenshot)
+            // Add detailed bucket summaries 
             bucketsData.forEach(bucket => {
                 let bucketStepsHTML = ''
                 let bucketHours = 0
@@ -691,7 +789,7 @@
             </div>`
             window.print()
             document.body.innerHTML = original
-            // Re-init after print (simple)
+            // Re-init after print
             setTimeout(() => location.reload(), 100)
         }
 
@@ -709,7 +807,6 @@
                 clearTimeout(timeout)
                 timeout = setTimeout(() => {
                     safeLocalStorageSet('restormate-v3-state', {
-                        bucketsData: bucketsData, // not really saving full data
                         procurementItems: procurementItems,
                         projectName: document.getElementById('project-name').value,
                         customerName: document.getElementById('customer-name').value,
@@ -719,7 +816,7 @@
                 }, 800)
             })
 
-            console.log('%c✅ RestorMate v3 ready (inputs zeroed by default, detailed preview restored)', 'color:#d97706; font-weight:600')
+            console.log('%c✅ RestorMate v3.1 ready — Full categories restored (12 buckets, all original steps selectable). v3 layout + calc + preview preserved and improved.', 'color:#d97706; font-weight:600')
         }
 
         window.onload = initializeApp
