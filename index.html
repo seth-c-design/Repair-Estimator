@@ -18,7 +18,7 @@
             transition: background-color 0.1s ease;
         }
         .step-row:hover {
-            background-color: #fffbeb;
+            background-color: #fefce8;
         }
         .total-card {
             transition: transform 0.2s ease;
@@ -464,31 +464,31 @@
 
                 if (stepHTML === '') return // no matching steps
 
-                const bucketHTML = `
-                <div class="bg-white rounded-3xl shadow overflow-hidden">
-                    <div onclick="toggleBucket(this)" class="accordion-header px-8 py-5 flex items-center justify-between cursor-pointer bg-amber-50">
-                        <div class="flex items-center gap-x-4">
-                            <span class="text-2xl">${bucket.icon}</span>
-                            <div>
-                                <h3 class="font-semibold text-amber-900">${bucket.title}</h3>
-                                <p class="text-xs text-amber-500">${totalSteps} steps</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-x-6">
-                            <div class="text-right">
-                                <div class="flex items-center gap-x-1 text-emerald-600">
-                                    <span id="selected-count-${bucket.id}" class="font-mono text-sm">0/${totalSteps}</span>
-                                </div>
-                            </div>
-                            <i onclick="event.stopImmediatePropagation(); toggleAllInBucket('${bucket.id}');" 
-                               class="fa-solid fa-check-double text-amber-400 hover:text-amber-600 cursor-pointer"></i>
-                            <i class="fa-solid fa-chevron-down transition-transform"></i>
+                      const bucketHTML = `
+        <div class="bg-white rounded-3xl shadow overflow-hidden">
+            <div onclick="toggleBucket(this)" class="accordion-header px-8 py-5 flex items-center justify-between cursor-pointer bg-amber-50 hover:bg-amber-100 transition-colors">
+                <div class="flex items-center gap-x-4">
+                    <span class="text-2xl">${bucket.icon}</span>
+                    <div>
+                        <h3 class="font-semibold text-amber-900">${bucket.title}</h3>
+                        <p class="text-xs text-amber-500">${totalSteps} steps</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-x-6">
+                    <div class="text-right">
+                        <div class="flex items-center gap-x-1 text-emerald-600">
+                            <span id="selected-count-${bucket.id}" class="font-mono text-sm">0/${totalSteps}</span>
                         </div>
                     </div>
-                    <div class="bucket-content hidden px-2">
-                        ${stepHTML}
-                    </div>
-                </div>`
+                    <i onclick="event.stopImmediatePropagation(); toggleAllInBucket('${bucket.id}');" 
+                       class="fa-solid fa-check-double text-amber-400 hover:text-amber-600 cursor-pointer"></i>
+                    <i class="fa-solid fa-chevron-down transition-transform"></i>
+                </div>
+            </div>
+            <div class="bucket-content hidden px-2">
+                ${stepHTML}
+            </div>
+        </div>`
 
                 container.innerHTML += bucketHTML
             })
