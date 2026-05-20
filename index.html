@@ -197,181 +197,166 @@
 
         // Data model - FULL categories restored from original detailed version
         // All selectable steps (the "dropdowns") now match the comprehensive list
-        let bucketsData = [
-           // Category definitions with tasks (compiled & cleaned from your spreadsheet)
-        const categories = [
-            {
-                id: "intake-planning",
-                name: "Intake, Assessment & Planning",
-                icon: "fa-search",
-                color: "amber",
-                tasks: [
-                    { name: "Visual assessment & condition documentation", defaultHours: 0.75, defaultCost: 0 },
-                    { name: "Photograph all pieces (overall + details)", defaultHours: 0.5, defaultCost: 0 },
-                    { name: "Inventory existing hardware & components", defaultHours: 0.5, defaultCost: 0 },
-                    { name: "Review fabric samples & plan color matching", defaultHours: 0.5, defaultCost: 0 },
-                    { name: "Create action item list & preliminary estimate", defaultHours: 0.75, defaultCost: 0 },
-                    { name: "Plan part orders & note lead times", defaultHours: 0.5, defaultCost: 0 },
-                    { name: "Physical organization, labeling & bucketing pieces", defaultHours: 1.0, defaultCost: 5 },
-                    { name: "Disassembly of item", defaultHours: 1.0, defaultCost: 0 }
-                ]
-            },
-            {
-                id: "repair",
-                name: "Repair",
-                icon: "fa-wrench",
-                color: "amber",
-                tasks: [
-                    { name: "Veneer chip / edge repair", defaultHours: 0, defaultCost: 0 },
-                    { name: "Joint repair (including epoxy)", defaultHours: 0, defaultCost: 0 },
-                    { name: "Structural repair / reinforcement", defaultHours: 0, defaultCost: 0 },
-                    { name: "Scrape / strip old glue", defaultHours: 0, defaultCost: 8 },
-                    { name: "CA glue repair (instant adhesives)", defaultHours: 0, defaultCost: 5 },
-                    { name: "Edge banding repair or replacement", defaultHours: 0, defaultCost: 0 },
-                    { name: "Hardware repair or reconditioning", defaultHours: 0, defaultCost: 0 },
-                    { name: "Break-apart / re-glue structural elements", defaultHours: 0, defaultCost: 15 }
-                ]
-            },
-            {
-                id: "modification",
-                name: "Modification",
-                icon: "fa-hammer",
-                color: "amber",
-                tasks: [
-                    { name: "Reveneer panel or surface", defaultHours: 0, defaultCost: 0 },
-                    { name: "Replace or repair edge banding", defaultHours: 0, defaultCost: 0 },
-                    { name: "Base or leg modification", defaultHours: 0, defaultCost: 0 },
-                    { name: "Side panel work or replacement", defaultHours: 0, defaultCost: 0 },
-                    { name: "Stability reinforcement", defaultHours: 0, defaultCost: 12 }
-                ]
-            },
-            {
-                id: "cleaning",
-                name: "Cleaning",
-                icon: "fa-soap",
-                color: "emerald",
-                tasks: [
-                    { name: "Watered-down Murphy's Oil Soap clean", defaultHours: 0, defaultCost: 8 },
-                    { name: "Wax wash clean", defaultHours: 0, defaultCost: 6 },
-                    { name: "Mineral spirits clean", defaultHours: 0, defaultCost: 10 },
-                    { name: "Goo Gone / adhesive remover", defaultHours: 0, defaultCost: 8 },
-                    { name: "Metal polish (hardware)", defaultHours: 0, defaultCost: 12 },
-                    { name: "General soap & water or scrubby clean", defaultHours: 0, defaultCost: 5 }
-                ]
-            },
-            {
-                id: "finish-removal",
-                name: "Finish Removal",
-                icon: "fa-eraser",
-                color: "rose",
-                tasks: [
-                    { name: "Scrubby clean (red / purple scrubby)", defaultHours: 0, defaultCost: 6 },
-                    { name: "Manual scrape of old finish", defaultHours: 0, defaultCost: 4 },
-                    { name: "220 grit sanding", defaultHours: 0, defaultCost: 3 },
-                    { name: "320 grit sanding", defaultHours: 0, defaultCost: 3 },
-                    { name: "Chemical strip / Oxalic acid treatment", defaultHours: 0, defaultCost: 18 },
-                    { name: "Wood bleach application", defaultHours: 0, defaultCost: 15 },
-                    { name: "Dent steaming", defaultHours: 0, defaultCost: 5 }
-                ]
-            },
-            {
-                id: "prep-for-seal",
-                name: "Finish Prep for Seal",
-                icon: "fa-sandpaper",
-                color: "sky",
-                tasks: [
-                    { name: "220 orbital sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "220 hand sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "320 orbital sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "320 hand sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "Area tape-off / masking", defaultHours: 0, defaultCost: 4 },
-                    { name: "Red scrubby final prep", defaultHours: 0, defaultCost: 3 },
-                    { name: "Purple scrubby final prep", defaultHours: 0, defaultCost: 3 }
-                ]
-            },
-            {
-                id: "pre-seal-color",
-                name: "Pre-Seal Color",
-                icon: "fa-palette",
-                color: "violet",
-                tasks: [
-                    { name: "Dye tone application", defaultHours: 0, defaultCost: 12 },
-                    { name: "Solvent stain", defaultHours: 0, defaultCost: 15 },
-                    { name: "Oil stain", defaultHours: 0, defaultCost: 18 },
-                    { name: "Vinyl fill / pore filler", defaultHours: 0, defaultCost: 10 },
-                    { name: "Other pre-seal coloring or toning", defaultHours: 0, defaultCost: 0 }
-                ]
-            },
-            {
-                id: "sealing",
-                name: "Sealing",
-                icon: "fa-shield-halved",
-                color: "teal",
-                tasks: [
-                    { name: "Vinyl Seal (regular strength)", defaultHours: 0, defaultCost: 22 },
-                    { name: "Vinyl Seal (thin / wash coat)", defaultHours: 0, defaultCost: 18 },
-                    { name: "Spray shellac sealer", defaultHours: 0, defaultCost: 15 },
-                    { name: "Wipe-on shellac sealer", defaultHours: 0, defaultCost: 12 },
-                    { name: "Polyurethane sealer", defaultHours: 0, defaultCost: 20 },
-                    { name: "Area tape-off for sealing", defaultHours: 0, defaultCost: 3 }
-                ]
-            },
-            {
-                id: "intra-finish",
-                name: "Intra-Finish Color & Treatment",
-                icon: "fa-paint-brush",
-                color: "fuchsia",
-                tasks: [
-                    { name: "NGR toning", defaultHours: 0, defaultCost: 14 },
-                    { name: "Can toning / aerosol toning", defaultHours: 0, defaultCost: 12 },
-                    { name: "In-painting / touch-up coloring", defaultHours: 0, defaultCost: 8 },
-                    { name: "Grain fill", defaultHours: 0, defaultCost: 15 },
-                    { name: "Glaze application", defaultHours: 0, defaultCost: 12 },
-                    { name: "Color stick / Blendal color application", defaultHours: 0, defaultCost: 6 }
-                ]
-            },
-            {
-                id: "finish-prep",
-                name: "Final Finish Prep",
-                icon: "fa-hand-sparkles",
-                color: "sky",
-                tasks: [
-                    { name: "Wax wash between coats", defaultHours: 0, defaultCost: 6 },
-                    { name: "400 hand sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "600 hand sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "400 orbital sand", defaultHours: 0, defaultCost: 2 },
-                    { name: "600 orbital sand", defaultHours: 0, defaultCost: 2 }
-                ]
-            },
-            {
-                id: "top-coat",
-                name: "Top Coat",
-                icon: "fa-layer-group",
-                color: "amber",
-                tasks: [
-                    { name: "Pre-catalyzed lacquer (build coats + sheen)", defaultHours: 0, defaultCost: 35, note: "Specify sheen (10/20/40/60/80) in notes" },
-                    { name: "Post-catalyzed lacquer", defaultHours: 0, defaultCost: 40, note: "Specify sheen level" },
-                    { name: "Polyurethane top coat", defaultHours: 0, defaultCost: 28 },
-                    { name: "Shellac top coat (or tinted shellac)", defaultHours: 0, defaultCost: 18 },
-                    { name: "Paint or enamel finish", defaultHours: 0, defaultCost: 25 },
-                    { name: "Additional top coat layer(s)", defaultHours: 0, defaultCost: 0 }
-                ]
-            },
-            {
-                id: "assembly-touchup",
-                name: "Assembly, Touch-Up & Final",
-                icon: "fa-check-double",
-                color: "emerald",
-                tasks: [
-                    { name: "Install / re-install hardware", defaultHours: 0, defaultCost: 8 },
-                    { name: "Refit pieces & drawers", defaultHours: 0, defaultCost: 0 },
-                    { name: "Ensure smooth drawer / door operation", defaultHours: 0, defaultCost: 0 },
-                    { name: "Final stain & finish touch-up pen work", defaultHours: 0, defaultCost: 10 },
-                    { name: "Final inspection, cleaning & detailing", defaultHours: 0.75, defaultCost: 5 }
-                ]
-            }
-        ];
-
+       let bucketsData = [
+    {
+        id: "intake-planning",
+        title: "Intake, Assessment & Planning",
+        icon: "🔍",
+        steps: [
+            {id: "visual-assessment", label: "Visual assessment & condition documentation", defaultHours: 0.75},
+            {id: "photographing", label: "Photograph all pieces (overall + details)", defaultHours: 0.5},
+            {id: "inventory-hardware", label: "Inventory existing hardware & components", defaultHours: 0.5},
+            {id: "fabric-samples", label: "Review fabric samples & plan color matching", defaultHours: 0.5},
+            {id: "action-items", label: "Create action item list & preliminary estimate", defaultHours: 0.75},
+            {id: "part-orders", label: "Plan part orders & note lead times", defaultHours: 0.5},
+            {id: "physical-organization", label: "Physical organization, labeling & bucketing pieces", defaultHours: 1.0},
+            {id: "disassembly", label: "Disassembly of item", defaultHours: 1.0}
+        ]
+    },
+    {
+        id: "repair",
+        title: "Repair",
+        icon: "🔨",
+        steps: [
+            {id: "veneer-chip-repair", label: "Veneer chip / edge repair", defaultHours: 0},
+            {id: "joint-repair", label: "Joint repair (including epoxy)", defaultHours: 0},
+            {id: "structural-repair", label: "Structural repair / reinforcement", defaultHours: 0},
+            {id: "scrape-glue", label: "Scrape / strip old glue", defaultHours: 0},
+            {id: "ca-glue", label: "CA glue repair (instant adhesives)", defaultHours: 0},
+            {id: "edge-banding-repair", label: "Edge banding repair or replacement", defaultHours: 0},
+            {id: "hardware-repair", label: "Hardware repair or reconditioning", defaultHours: 0},
+            {id: "break-apart-reglue", label: "Break-apart / re-glue structural elements", defaultHours: 0}
+        ]
+    },
+    {
+        id: "modification",
+        title: "Modification",
+        icon: "🛠️",
+        steps: [
+            {id: "reveneer", label: "Reveneer panel or surface", defaultHours: 0},
+            {id: "edge-banding-replace", label: "Replace or repair edge banding", defaultHours: 0},
+            {id: "base-leg-mod", label: "Base or leg modification", defaultHours: 0},
+            {id: "side-panel", label: "Side panel work or replacement", defaultHours: 0},
+            {id: "stability-reinforce", label: "Stability reinforcement", defaultHours: 0}
+        ]
+    },
+    {
+        id: "cleaning",
+        title: "Cleaning",
+        icon: "🧼",
+        steps: [
+            {id: "murphys-soap", label: "Watered-down Murphy's Oil Soap clean", defaultHours: 0},
+            {id: "wax-wash", label: "Wax wash clean", defaultHours: 0},
+            {id: "mineral-spirits", label: "Mineral spirits clean", defaultHours: 0},
+            {id: "goo-gone", label: "Goo Gone / adhesive remover", defaultHours: 0},
+            {id: "metal-polish", label: "Metal polish (hardware)", defaultHours: 0},
+            {id: "general-clean", label: "General soap & water or scrubby clean", defaultHours: 0}
+        ]
+    },
+    {
+        id: "finish-removal",
+        title: "Finish Removal",
+        icon: "🧪",
+        steps: [
+            {id: "scrubby-clean", label: "Scrubby clean (red / purple scrubby)", defaultHours: 0},
+            {id: "manual-scrape", label: "Manual scrape of old finish", defaultHours: 0},
+            {id: "sand-220", label: "220 grit sanding", defaultHours: 0},
+            {id: "sand-320", label: "320 grit sanding", defaultHours: 0},
+            {id: "chemical-strip", label: "Chemical strip / Oxalic acid treatment", defaultHours: 0},
+            {id: "wood-bleach", label: "Wood bleach application", defaultHours: 0},
+            {id: "dent-steaming", label: "Dent steaming", defaultHours: 0}
+        ]
+    },
+    {
+        id: "prep-for-seal",
+        title: "Finish Prep for Seal",
+        icon: "📏",
+        steps: [
+            {id: "sand-220-orbital", label: "220 orbital sand", defaultHours: 0},
+            {id: "sand-220-hand", label: "220 hand sand", defaultHours: 0},
+            {id: "sand-320-orbital", label: "320 orbital sand", defaultHours: 0},
+            {id: "sand-320-hand", label: "320 hand sand", defaultHours: 0},
+            {id: "tape-off", label: "Area tape-off / masking", defaultHours: 0},
+            {id: "red-scrubby", label: "Red scrubby final prep", defaultHours: 0},
+            {id: "purple-scrubby", label: "Purple scrubby final prep", defaultHours: 0}
+        ]
+    },
+    {
+        id: "pre-seal-color",
+        title: "Pre-Seal Color",
+        icon: "🎨",
+        steps: [
+            {id: "dye-tone", label: "Dye tone application", defaultHours: 0},
+            {id: "solvent-stain", label: "Solvent stain", defaultHours: 0},
+            {id: "oil-stain", label: "Oil stain", defaultHours: 0},
+            {id: "vinyl-fill", label: "Vinyl fill / pore filler", defaultHours: 0},
+            {id: "other-coloring", label: "Other pre-seal coloring or toning", defaultHours: 0}
+        ]
+    },
+    {
+        id: "sealing",
+        title: "Sealing",
+        icon: "🛡️",
+        steps: [
+            {id: "vinyl-seal-regular", label: "Vinyl Seal (regular strength)", defaultHours: 0},
+            {id: "vinyl-seal-thin", label: "Vinyl Seal (thin / wash coat)", defaultHours: 0},
+            {id: "spray-shellac", label: "Spray shellac sealer", defaultHours: 0},
+            {id: "wipe-shellac", label: "Wipe-on shellac sealer", defaultHours: 0},
+            {id: "poly-sealer", label: "Polyurethane sealer", defaultHours: 0},
+            {id: "tape-off-seal", label: "Area tape-off for sealing", defaultHours: 0}
+        ]
+    },
+    {
+        id: "intra-finish",
+        title: "Intra-Finish Color & Treatment",
+        icon: "🖌️",
+        steps: [
+            {id: "ngr-toning", label: "NGR toning", defaultHours: 0},
+            {id: "can-toning", label: "Can toning / aerosol toning", defaultHours: 0},
+            {id: "in-painting", label: "In-painting / touch-up coloring", defaultHours: 0},
+            {id: "grain-fill", label: "Grain fill", defaultHours: 0},
+            {id: "glaze", label: "Glaze application", defaultHours: 0},
+            {id: "color-stick", label: "Color stick / Blendal color application", defaultHours: 0}
+        ]
+    },
+    {
+        id: "finish-prep",
+        title: "Final Finish Prep",
+        icon: "✨",
+        steps: [
+            {id: "wax-wash-coats", label: "Wax wash between coats", defaultHours: 0},
+            {id: "sand-400-hand", label: "400 hand sand", defaultHours: 0},
+            {id: "sand-600-hand", label: "600 hand sand", defaultHours: 0},
+            {id: "sand-400-orbital", label: "400 orbital sand", defaultHours: 0},
+            {id: "sand-600-orbital", label: "600 orbital sand", defaultHours: 0}
+        ]
+    },
+    {
+        id: "top-coat",
+        title: "Top Coat",
+        icon: "🖌️",
+        steps: [
+            {id: "pre-cat-lacquer", label: "Pre-catalyzed lacquer (build coats + sheen)", defaultHours: 0, note: "Specify sheen (10/20/40/60/80) in notes"},
+            {id: "post-cat-lacquer", label: "Post-catalyzed lacquer", defaultHours: 0, note: "Specify sheen level"},
+            {id: "polyurethane", label: "Polyurethane top coat", defaultHours: 0},
+            {id: "shellac-top", label: "Shellac top coat (or tinted shellac)", defaultHours: 0},
+            {id: "paint-enamel", label: "Paint or enamel finish", defaultHours: 0},
+            {id: "additional-coat", label: "Additional top coat layer(s)", defaultHours: 0}
+        ]
+    },
+    {
+        id: "assembly-touchup",
+        title: "Assembly, Touch-Up & Final",
+        icon: "🔧",
+        steps: [
+            {id: "install-hardware", label: "Install / re-install hardware", defaultHours: 0},
+            {id: "refit-pieces", label: "Refit pieces & drawers", defaultHours: 0},
+            {id: "drawer-operation", label: "Ensure smooth drawer / door operation", defaultHours: 0},
+            {id: "final-touchup", label: "Final stain & finish touch-up pen work", defaultHours: 0},
+            {id: "final-inspection", label: "Final inspection, cleaning & detailing", defaultHours: 0.75}
+        ]
+    }
+];
         let procurementItems = []
         let laborRate = 100
         let currentFilter = ''
