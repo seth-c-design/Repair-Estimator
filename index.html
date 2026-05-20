@@ -3,1085 +3,726 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RestorMate v2 • Restoration Intake &amp; Estimate</title>
+    <title>RestorMate v3 • Process Buckets • Intake & Estimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
-        
-        body { font-family: 'Inter', system_ui, sans-serif; }
-        .heading-serif { font-family: 'Playfair Display', Georgia, serif; }
-
-        .section-header { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .section-header:hover { background-color: #fefce8; }
-
-        .accordion-content { transition: all 0.3s ease-out; overflow: hidden; }
-        
-        .metric-value { font-variant-numeric: tabular-nums; }
-        .task-row { transition: background-color 0.1s ease; }
-        .task-row:hover { background-color: #fefce8; }
-
-        .estimate-card { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
-        
-        .wood-grain { background-image: linear-gradient(rgba(133, 77, 14, 0.03) 1px, transparent 1px); background-size: 4px 4px; }
-
-        .subtotal-pill { background-color: #fefce8; color: #713f12; font-weight: 600; font-size: 0.75rem; }
-
-        .search-highlight { background-color: #fef08c; padding: 0 2px; border-radius: 2px; }
-
-        .rate-preset { transition: all 0.1s ease; }
-        .rate-preset.active { background-color: #854d0e; color: white; border-color: #854d0e; }
-
-        .category-progress { height: 4px; background-color: #e5e7eb; border-radius: 9999px; overflow: hidden; }
-        .category-progress-bar { height: 100%; background-color: #854d0e; transition: width 0.3s ease; }
-
-        .modal { animation: fadeInScale 0.2s ease forwards; }
-        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        :root {
+            --tw-color-primary: #d97706;
         }
-        
-        .category-card { border: 1px solid #e5e7eb; transition: box-shadow 0.2s ease, border-color 0.2s ease; }
-        .category-card:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-
-        .task-name { font-weight: 500; }
-        .compact-input { padding-top: 0.35rem; padding-bottom: 0.35rem; font-size: 0.875rem; }
+        .accordion-header {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .step-row {
+            transition: background-color 0.1s ease;
+        }
+        .step-row:hover {
+            background-color: #fffbeb;
+        }
+        .total-card {
+            transition: transform 0.2s ease;
+        }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800">
-    <!-- Top Navigation -->
-    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50 no-print">
-        <div class="max-w-screen-2xl mx-auto px-6">
-            <div class="flex items-center justify-between py-4">
-                <div class="flex items-center gap-x-4">
-                    <div class="flex items-center gap-x-3">
-                        <div class="w-11 h-11 bg-amber-900 rounded-2xl flex items-center justify-center shadow-inner">
-                            <i class="fa-solid fa-tools text-amber-100 text-3xl"></i>
+<body class="bg-amber-50 font-sans">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-amber-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-inner">🪚</div>
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-tight text-amber-900">RestorMate</h1>
+                    <p class="text-amber-600 text-sm -mt-1">v3 • Process Buckets & Intake Estimator</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-x-4">
+                <div onclick="loadDemo()" class="flex items-center gap-x-2 px-5 py-3 bg-white border border-amber-200 hover:border-amber-300 rounded-3xl text-amber-700 font-medium cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Load Demo</span>
+                </div>
+                <div onclick="clearAll()" class="flex items-center gap-x-2 px-5 py-3 bg-white border border-amber-200 hover:border-amber-300 rounded-3xl text-amber-700 font-medium cursor-pointer">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Clear</span>
+                </div>
+                <div onclick="showPreview()" class="flex items-center gap-x-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-3xl font-semibold cursor-pointer shadow-md">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Preview & Print</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Totals -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" id="totals-bar">
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">ESTIMATED HOURS</p>
+                        <p id="total-hours" class="text-5xl font-semibold text-amber-900 tabular-nums">0.00</p>
+                    </div>
+                    <i class="fa-solid fa-clock text-4xl text-amber-200"></i>
+                </div>
+            </div>
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">LABOR COST</p>
+                        <div class="flex items-baseline gap-x-1">
+                            <p id="total-labor" class="text-5xl font-semibold text-emerald-600">$0</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-dollar-sign text-4xl text-emerald-200"></i>
+                </div>
+                <div class="mt-4 flex gap-x-1 text-xs" id="rate-presets">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">MATERIALS & PARTS</p>
+                        <p id="total-materials" class="text-5xl font-semibold text-amber-600">$0</p>
+                    </div>
+                    <i class="fa-solid fa-boxes-packing text-4xl text-amber-200"></i>
+                </div>
+            </div>
+            <div class="total-card bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium tracking-widest opacity-75">GRAND TOTAL</p>
+                        <p id="grand-total" class="text-5xl font-semibold">$0</p>
+                    </div>
+                    <i class="fa-solid fa-calculator text-4xl opacity-50"></i>
+                </div>
+                <p id="project-name-top" class="text-amber-100 text-sm mt-6"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: Details + Procurement -->
+            <div class="lg:col-span-4 space-y-8">
+                <!-- Project Details -->
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-6"><i class="fa-solid fa-clipboard-list"></i> Project Details</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-medium text-amber-500 mb-1">PROJECT / ITEM NAME</label>
+                            <input id="project-name" type="text" value="" placeholder="e.g. Mahogany Side Table Restoration" 
+                                   class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl text-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-amber-500 mb-1">CUSTOMER NAME</label>
+                                <input id="customer-name" type="text" value="" placeholder="Jane Thompson" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-amber-500 mb-1">EMAIL</label>
+                                <input id="customer-email" type="text" value="" placeholder="jane@email.com" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl">
+                            </div>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-semibold tracking-tight heading-serif text-stone-900">RestorMate <span class="text-xs align-super text-amber-700 font-mono">v2</span></h1>
-                            <p class="text-[10px] text-stone-500 -mt-1">Process Buckets • Intake &amp; Estimate</p>
+                            <label class="block text-xs font-medium text-amber-500 mb-1">NOTES / SPECIAL INSTRUCTIONS</label>
+                            <textarea id="notes" rows="3" placeholder="Preserve original patina where possible..." class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-3xl"></textarea>
                         </div>
                     </div>
+                </div>
+
+                <!-- Procurement -->
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-4"><i class="fa-solid fa-truck"></i> Procurement & Parts Planning</h2>
+                    <p class="text-xs text-amber-600 mb-4">Major hardware, veneer, specialty finishes & lead-time items only</p>
                     
-                    <div class="hidden md:flex items-center gap-x-2 ml-4 pl-4 border-l border-stone-200">
-                        <div class="text-xs uppercase tracking-[1px] text-stone-500 font-medium">PROJECT</div>
-                        <input id="project-name" class="bg-stone-100 border border-stone-200 focus:border-amber-700 focus:ring-1 focus:ring-amber-700 rounded-2xl px-4 py-1.5 text-sm font-medium w-72" 
-                               value="Mahogany Side Table Restoration" placeholder="Project name">
+                    <div id="procurement-list" class="space-y-3 mb-6 max-h-80 overflow-auto"></div>
+                    
+                    <div class="flex gap-x-3">
+                        <button onclick="addProcurementItem()" 
+                                class="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-700 px-5 py-3 rounded-3xl text-sm font-medium flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-plus"></i> Add Part to Order
+                        </button>
+                        <button onclick="addCommonHardware()" 
+                                class="flex-1 bg-white border border-amber-300 hover:border-amber-400 text-amber-700 px-5 py-3 rounded-3xl text-sm font-medium">
+                            Quick Add Common Items
+                        </button>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-x-2">
-                    <button onclick="loadDemoData()" class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium rounded-2xl border border-stone-300 hover:bg-stone-100 transition-colors">
-                        <i class="fa-solid fa-magic mr-1.5"></i> <span class="hidden sm:inline">Load Demo</span>
-                    </button>
-                    <button onclick="clearAllData()" class="flex items-center gap-x-2 px-4 py-2 text-sm font-medium rounded-2xl border border-stone-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
-                        <i class="fa-solid fa-trash mr-1.5"></i> <span class="hidden sm:inline">Clear</span>
-                    </button>
-                    <div class="h-8 w-px bg-stone-200 mx-1"></div>
-                    <button onclick="showPrintPreview()" class="flex items-center gap-x-2 bg-amber-900 hover:bg-amber-950 text-white px-5 py-2 rounded-2xl text-sm font-semibold shadow-sm">
-                        <i class="fa-solid fa-print mr-2"></i> <span>Preview &amp; Print</span>
-                    </button>
-                </div>
             </div>
-        </div>
-    </nav>
 
-    <div class="max-w-screen-2xl mx-auto px-6 pt-6 pb-12">
-        
-        <!-- Global Search + Quick Tips -->
-        <div class="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div class="flex-1 max-w-md">
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-4 top-3.5 text-stone-400"></i>
-                    <input id="global-search" type="text" placeholder="Search tasks across all buckets..." 
-                           class="w-full pl-11 pr-4 py-3 bg-white border border-stone-300 focus:border-amber-700 rounded-3xl text-sm"
-                           oninput="filterTasks()">
-                    <div id="search-results-count" class="hidden absolute right-4 top-3.5 text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium"></div>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-x-3 text-sm">
-                <div class="hidden md:flex items-center gap-x-2 text-xs text-stone-500">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <span>Tip: Use search to quickly find sanding, staining, or hardware tasks</span>
-                </div>
-                <button onclick="expandAllCategories()" class="text-xs px-3 py-1.5 border border-stone-300 rounded-2xl hover:bg-stone-100">Expand All</button>
-                <button onclick="collapseAllCategories()" class="text-xs px-3 py-1.5 border border-stone-300 rounded-2xl hover:bg-stone-100">Collapse All</button>
-            </div>
-        </div>
-
-        <!-- Project Info + Live Summary -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-            
-            <!-- Project Details -->
-            <div class="lg:col-span-5 bg-white rounded-3xl border border-stone-200 p-6 estimate-card">
+            <!-- Main Content: Process Buckets -->
+            <div class="lg:col-span-8">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-semibold text-lg flex items-center gap-x-2">
-                        <i class="fa-solid fa-clipboard-list text-amber-700"></i>
-                        <span>Project Details</span>
-                    </h2>
-                    <div class="text-xs px-3 py-1 bg-stone-100 text-stone-600 rounded-full font-medium">Intake</div>
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2"><i class="fa-solid fa-list-check"></i> Process Buckets</h2>
+                    <div class="relative flex-1 max-w-xs mx-8">
+                        <input id="global-search" 
+                               onkeyup="if(event.keyCode===13) filterBuckets()"
+                               placeholder="Search steps (sand, veneer, hardware...)" 
+                               class="w-full pl-10 py-3 border border-amber-200 focus:border-amber-400 rounded-3xl text-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-amber-300"></i>
+                    </div>
+                    <button onclick="clearSearch()" class="text-xs text-amber-500 hover:text-amber-700">Clear filter</button>
                 </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 text-sm">
-                    <div>
-                        <label class="block text-xs font-medium text-stone-500 mb-1">CUSTOMER NAME</label>
-                        <input id="customer-name" class="w-full border border-stone-300 focus:border-amber-700 rounded-2xl px-4 py-2 text-sm" value="Jane Thompson">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-stone-500 mb-1">PHONE</label>
-                        <input id="customer-phone" class="w-full border border-stone-300 focus:border-amber-700 rounded-2xl px-4 py-2 text-sm" value="(816) 555-0192">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-stone-500 mb-1">EMAIL</label>
-                        <input id="customer-email" class="w-full border border-stone-300 focus:border-amber-700 rounded-2xl px-4 py-2 text-sm" value="jane.t@email.com">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-stone-500 mb-1">TARGET COMPLETION</label>
-                        <input id="completion-date" type="date" class="w-full border border-stone-300 focus:border-amber-700 rounded-2xl px-4 py-2 text-sm" value="2026-06-18">
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-stone-500 mb-1">NOTES / SPECIAL INSTRUCTIONS</label>
-                        <textarea id="project-notes" rows="2" class="w-full border border-stone-300 focus:border-amber-700 rounded-3xl px-4 py-2 text-sm resize-y" placeholder="Preserve original patina where possible..."></textarea>
-                    </div>
-                </div>
+
+                <!-- Buckets will be injected here by JS -->
+                <div id="buckets-container" class="space-y-4"></div>
             </div>
-
-            <!-- Live Summary -->
-            <div class="lg:col-span-7 bg-white rounded-3xl border border-stone-200 p-6 estimate-card">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-semibold text-lg flex items-center gap-x-2">
-                        <i class="fa-solid fa-chart-line text-emerald-600"></i>
-                        <span>Live Estimate Summary</span>
-                    </h2>
-                    <div class="flex items-center gap-x-2">
-                        <div class="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold flex items-center gap-x-1">
-                            <i class="fa-solid fa-sync fa-sm"></i> <span>LIVE</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- Hours -->
-                    <div class="bg-stone-50 rounded-2xl p-4 border border-stone-100">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-xs uppercase tracking-wider text-stone-500 font-medium">TOTAL HOURS</div>
-                                <div id="total-hours" class="metric-value text-4xl font-semibold text-stone-900 mt-1 tabular-nums">0.00</div>
-                            </div>
-                            <i class="fa-solid fa-clock text-3xl text-amber-700/70 mt-1"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Labor -->
-                    <div class="bg-stone-50 rounded-2xl p-4 border border-stone-100">
-                        <div class="flex justify-between items-start mb-1">
-                            <div>
-                                <div class="text-xs uppercase tracking-wider text-stone-500 font-medium">LABOR COST</div>
-                                <div id="labor-cost" class="metric-value text-4xl font-semibold text-stone-900 mt-1 tabular-nums">$0</div>
-                            </div>
-                            <i class="fa-solid fa-user-clock text-3xl text-amber-700/70 mt-1"></i>
-                        </div>
-                        
-                        <!-- Labor Rate with Presets -->
-                        <div class="mt-2">
-                            <div class="flex items-center gap-x-1 text-xs mb-1">
-                                <span class="text-stone-500">Rate</span>
-                                <div class="flex gap-x-1">
-                                    <button onclick="setLaborRate(75)" class="rate-preset text-[10px] px-2 py-0.5 border border-stone-300 rounded-lg hover:bg-stone-100">75</button>
-                                    <button onclick="setLaborRate(100)" class="rate-preset active text-[10px] px-2 py-0.5 border border-stone-300 rounded-lg">100</button>
-                                    <button onclick="setLaborRate(125)" class="rate-preset text-[10px] px-2 py-0.5 border border-stone-300 rounded-lg hover:bg-stone-100">125</button>
-                                    <button onclick="setLaborRate(150)" class="rate-preset text-[10px] px-2 py-0.5 border border-stone-300 rounded-lg hover:bg-stone-100">150</button>
-                                </div>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="text-xs text-stone-500 mr-2">$</span>
-                                <input id="labor-rate" type="number" step="5" value="100" class="w-16 text-sm font-mono border border-stone-300 rounded-xl px-2 py-1 focus:border-amber-700" onchange="updateAllTotals()">
-                                <span class="text-xs text-stone-500 ml-1">/hr</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Materials -->
-                    <div class="bg-stone-50 rounded-2xl p-4 border border-stone-100">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-xs uppercase tracking-wider text-stone-500 font-medium">MATERIALS + PARTS</div>
-                                <div id="materials-cost" class="metric-value text-4xl font-semibold text-stone-900 mt-1 tabular-nums">$0</div>
-                            </div>
-                            <i class="fa-solid fa-boxes-stacked text-3xl text-amber-700/70 mt-1"></i>
-                        </div>
-                        <div class="text-[10px] text-stone-500 mt-1">Finishes, hardware, veneer, etc.</div>
-                    </div>
-                    
-                    <!-- Grand Total -->
-                    <div class="bg-gradient-to-br from-amber-900 to-stone-900 text-white rounded-2xl p-4 flex flex-col justify-between border border-amber-800">
-                        <div>
-                            <div class="text-xs uppercase tracking-[1.5px] text-amber-200 font-medium">ESTIMATED TOTAL</div>
-                            <div id="grand-total" class="metric-value text-4xl font-semibold mt-1 tabular-nums">$0</div>
-                        </div>
-                        <div class="text-xs text-amber-300">Includes all selected work + parts</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Procurement Section -->
-        <div class="mb-6 bg-white rounded-3xl border border-stone-200 overflow-hidden estimate-card">
-            <div onclick="toggleProcurement()" class="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-stone-50 section-header">
-                <div class="flex items-center gap-x-3">
-                    <i class="fa-solid fa-truck text-amber-700 fa-lg"></i>
-                    <div>
-                        <span class="font-semibold text-lg">Procurement &amp; Parts Planning</span>
-                        <span class="ml-3 text-xs px-2.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Lead-time items &amp; inventory</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-x-4">
-                    <div class="text-right">
-                        <div class="text-xs text-stone-500">Parts Total</div>
-                        <div id="procurement-total" class="font-semibold text-lg tabular-nums text-amber-900">$0.00</div>
-                    </div>
-                    <i id="procurement-chevron" class="fa-solid fa-chevron-down text-stone-400 transition-transform"></i>
-                </div>
-            </div>
-            
-            <div id="procurement-content" class="hidden px-6 pb-6">
-                <div class="mb-3 flex gap-2">
-                    <button onclick="addProcurementRow()" class="text-sm flex items-center gap-x-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-2xl font-medium">
-                        <i class="fa-solid fa-plus"></i> <span>Add Custom Part</span>
-                    </button>
-                    <button onclick="addCommonHardware()" class="text-sm flex items-center gap-x-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-2xl font-medium">
-                        <i class="fa-solid fa-plus"></i> <span>Quick Add Common Hardware</span>
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b text-xs text-stone-500">
-                                <th class="text-left py-2 font-medium">Item / Part</th>
-                                <th class="text-center py-2 w-16 font-medium">Qty</th>
-                                <th class="text-right py-2 w-20 font-medium">Unit $</th>
-                                <th class="text-right py-2 w-20 font-medium">Line Total</th>
-                                <th class="text-left py-2 font-medium">Lead Time / Notes</th>
-                                <th class="text-center py-2 w-16 font-medium">Ordered</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="procurement-tbody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Process Buckets -->
-        <div class="flex items-end justify-between mb-4">
-            <div>
-                <h2 class="text-2xl font-semibold tracking-tight">Process Buckets</h2>
-                <p class="text-stone-600 text-sm">Check steps that apply • Enter hours &amp; costs • Live totals update automatically</p>
-            </div>
-            <div id="global-selected-count" class="hidden md:block text-sm text-stone-500 font-medium"></div>
-        </div>
-
-        <div id="categories-container" class="space-y-3"></div>
-
-        <div class="mt-8 text-center text-xs text-stone-400">
-            Data auto-saves in your browser • v2 improved with search, presets, per-category controls &amp; better defaults
         </div>
     </div>
 
-    <!-- Print Modal -->
-    <div id="print-modal" onclick="if (event.target.id === 'print-modal') hidePrintPreview()" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 no-print">
-        <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-4xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div class="px-8 py-5 border-b flex items-center justify-between bg-stone-50">
+    <!-- Preview Modal -->
+    <div onclick="if(event.target.id === 'preview-modal') hidePreview()" id="preview-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+            <div class="px-8 py-6 border-b flex items-center justify-between">
                 <div>
-                    <h3 class="font-semibold text-xl">Client Estimate Preview</h3>
-                    <p class="text-sm text-stone-500">Print-ready • Grouped by process bucket</p>
+                    <h2 class="text-2xl font-semibold">Client Estimate Preview</h2>
+                    <p class="text-amber-500 text-sm">Print-ready • Grouped by process bucket</p>
                 </div>
-                <div class="flex gap-x-3">
-                    <button onclick="window.print()" class="flex items-center gap-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-2xl">
-                        <i class="fa-solid fa-print"></i> <span>Print / PDF</span>
+                <div class="flex items-center gap-x-4">
+                    <button onclick="printPreview()" 
+                            class="flex items-center gap-x-2 px-6 py-2 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print / PDF</span>
                     </button>
-                    <button onclick="hidePrintPreview()" class="px-4 py-2.5 text-sm font-medium text-stone-600">Close</button>
+                    <button onclick="hidePreview()" class="text-amber-500 hover:text-amber-700">Close</button>
                 </div>
             </div>
-            <div id="print-preview-content" class="p-8 overflow-auto flex-1 text-sm"></div>
+            
+            <div id="preview-content" class="flex-1 p-8 overflow-auto text-sm leading-relaxed"></div>
         </div>
     </div>
 
     <script>
-        // Tailwind + categories data (improved & cleaned from original CSV review)
-        function initializeTailwind() {
-            tailwind.config = { theme: { extend: {} } };
+        // Tailwind script already loaded
+        function initTailwind() {
+            // Already initialized via CDN
         }
 
-        const categories = [
+        // Data model - Pruned v3 buckets
+        let bucketsData = [
             {
-                id: "intake-planning",
-                name: "Intake, Assessment & Planning",
-                icon: "fa-search",
-                color: "amber",
-                tasks: [
-                    { name: "Visual assessment & condition documentation", suggestedHours: 0.75, suggestedCost: 0 },
-                    { name: "Photograph all pieces (overall + details)", suggestedHours: 0.5, suggestedCost: 0 },
-                    { name: "Inventory existing hardware", suggestedHours: 0.5, suggestedCost: 0 },
-                    { name: "Review fabric samples & plan color match", suggestedHours: 0.5, suggestedCost: 0 },
-                    { name: "Create action item list & estimate", suggestedHours: 0.75, suggestedCost: 0 },
-                    { name: "Plan part orders & note lead times", suggestedHours: 0.5, suggestedCost: 0 },
-                    { name: "Physical organization, labeling & bucketing", suggestedHours: 1.0, suggestedCost: 5 },
-                    { name: "Disassembly of item", suggestedHours: 1.0, suggestedCost: 0 }
+                id: "intake",
+                title: "Intake, Assessment & Planning",
+                icon: "🔍",
+                steps: [
+                    {id: "visual-assessment", label: "Visual assessment & condition documentation", defaultHours: 0.5},
+                    {id: "inventory-hardware", label: "Inventory of hardware", defaultHours: 0.5},
+                    {id: "photographing", label: "Photographing all pieces", defaultHours: 0.5},
+                    {id: "fabric-samples", label: "Review fabric samples & plan color match", defaultHours: 0.5},
+                    {id: "action-items", label: "Create action item list & estimate", defaultHours: 0.75},
+                    {id: "part-orders", label: "Plan part orders & note lead times", defaultHours: 0.5},
+                    {id: "physical-organization", label: "Physical organization, labeling & bucketing", defaultHours: 1},
+                    {id: "disassembly", label: "Disassembly of item", defaultHours: 1}
                 ]
             },
             {
                 id: "repair",
-                name: "Repair",
-                icon: "fa-wrench",
-                color: "amber",
-                tasks: [
-                    { name: "Veneer chip / edge repair", suggestedHours: 2.0, suggestedCost: 45 },
-                    { name: "Joint repair (incl. epoxy)", suggestedHours: 1.5, suggestedCost: 25 },
-                    { name: "Structural repair / reinforcement", suggestedHours: 1.0, suggestedCost: 15 },
-                    { name: "Scrape / strip old glue", suggestedHours: 0.75, suggestedCost: 8 },
-                    { name: "CA glue repair", suggestedHours: 0.5, suggestedCost: 6 },
-                    { name: "Edge banding repair/replacement", suggestedHours: 1.0, suggestedCost: 18 },
-                    { name: "Hardware repair or reconditioning", suggestedHours: 0.75, suggestedCost: 12 }
-                ]
-            },
-            {
-                id: "modification",
-                name: "Modification",
-                icon: "fa-hammer",
-                color: "amber",
-                tasks: [
-                    { name: "Reveneer panel or surface", suggestedHours: 3.0, suggestedCost: 85 },
-                    { name: "Replace/repair edge banding", suggestedHours: 1.25, suggestedCost: 22 },
-                    { name: "Base or leg modification", suggestedHours: 1.5, suggestedCost: 30 },
-                    { name: "Stability reinforcement", suggestedHours: 1.0, suggestedCost: 18 }
+                title: "Repair & Modification",
+                icon: "🔨",
+                steps: [
+                    {id: "veneer-repair", label: "Veneer chip / edge repair", defaultHours: 2},
+                    {id: "joint-repair", label: "Joint repair (incl. epoxy)", defaultHours: 1.5},
+                    {id: "structural-repair", label: "Structural repair / reinforcement", defaultHours: 1},
+                    {id: "scrape-glue", label: "Scrape / strip old glue", defaultHours: 0.75},
+                    {id: "ca-glue", label: "CA glue repair", defaultHours: 0.5},
+                    {id: "reveneer", label: "Reveneer panel or surface", defaultHours: 3},
+                    {id: "edge-banding", label: "Replace/repair edge banding", defaultHours: 1.25},
+                    {id: "base-mod", label: "Base or leg modification", defaultHours: 1.5},
+                    {id: "stability", label: "Stability reinforcement", defaultHours: 1}
                 ]
             },
             {
                 id: "cleaning",
-                name: "Cleaning",
-                icon: "fa-soap",
-                color: "emerald",
-                tasks: [
-                    { name: "Watered-down Murphy's Oil Soap clean", suggestedHours: 0.75, suggestedCost: 8 },
-                    { name: "Wax wash clean", suggestedHours: 0.5, suggestedCost: 6 },
-                    { name: "Mineral spirits clean", suggestedHours: 0.5, suggestedCost: 10 },
-                    { name: "Goo Gone / adhesive remover", suggestedHours: 0.5, suggestedCost: 8 },
-                    { name: "Metal polish (hardware)", suggestedHours: 0.5, suggestedCost: 12 },
-                    { name: "General soap & water / scrubby clean", suggestedHours: 0.5, suggestedCost: 5 }
+                title: "Cleaning",
+                icon: "🧼",
+                steps: [
+                    {id: "general-clean", label: "General cleaning (soap & water / scrubby)", defaultHours: 0.75},
+                    {id: "hardware-clean", label: "Hardware / metal polishing", defaultHours: 0.5}
                 ]
             },
             {
                 id: "finish-removal",
-                name: "Finish Removal",
-                icon: "fa-eraser",
-                color: "rose",
-                tasks: [
-                    { name: "Scrubby clean (red/purple)", suggestedHours: 0.75, suggestedCost: 6 },
-                    { name: "Manual scrape of old finish", suggestedHours: 1.0, suggestedCost: 4 },
-                    { name: "220 grit sanding", suggestedHours: 1.0, suggestedCost: 3 },
-                    { name: "320 grit sanding", suggestedHours: 0.75, suggestedCost: 3 },
-                    { name: "Chemical strip / Oxalic acid", suggestedHours: 1.5, suggestedCost: 22 },
-                    { name: "Wood bleach application", suggestedHours: 1.0, suggestedCost: 18 },
-                    { name: "Dent steaming", suggestedHours: 0.5, suggestedCost: 5 }
+                title: "Finish Removal & Chemical Treatment",
+                icon: "🧪",
+                steps: [
+                    {id: "scrubby-clean", label: "Scrubby clean / adhesive remover", defaultHours: 0.75},
+                    {id: "scrape", label: "Manual scrape of old finish", defaultHours: 1},
+                    {id: "chemical-strip", label: "Chemical strip / Oxalic acid", defaultHours: 1.5},
+                    {id: "bleach", label: "Wood bleach application", defaultHours: 1},
+                    {id: "dent-steaming", label: "Dent steaming", defaultHours: 0.5}
                 ]
             },
             {
-                id: "prep-for-seal",
-                name: "Finish Prep for Seal",
-                icon: "fa-sandpaper",
-                color: "sky",
-                tasks: [
-                    { name: "220 orbital sand", suggestedHours: 0.75, suggestedCost: 2 },
-                    { name: "220 hand sand", suggestedHours: 0.5, suggestedCost: 2 },
-                    { name: "320 orbital sand", suggestedHours: 0.75, suggestedCost: 2 },
-                    { name: "320 hand sand", suggestedHours: 0.5, suggestedCost: 2 },
-                    { name: "Area tape-off / masking", suggestedHours: 0.5, suggestedCost: 4 },
-                    { name: "Red/Purple scrubby final prep", suggestedHours: 0.5, suggestedCost: 3 }
+                id: "surface-prep",
+                title: "Surface Preparation (Sanding & Prep)",
+                icon: "📏",
+                steps: [
+                    {id: "progressive-sanding", label: "Progressive sanding & surface prep (all grits)", defaultHours: 2.5, note: "Covers full sequence — 220 → 320 → 400 → 600"},
+                    {id: "final-prep", label: "Final prep (red/purple scrubby, tape-off, etc.)", defaultHours: 0.75}
                 ]
             },
             {
-                id: "pre-seal-color",
-                name: "Pre-Seal Color",
-                icon: "fa-palette",
-                color: "violet",
-                tasks: [
-                    { name: "Dye tone application", suggestedHours: 1.0, suggestedCost: 14 },
-                    { name: "Solvent stain", suggestedHours: 1.0, suggestedCost: 16 },
-                    { name: "Oil stain", suggestedHours: 1.0, suggestedCost: 18 },
-                    { name: "Vinyl fill / pore filler", suggestedHours: 0.75, suggestedCost: 12 }
-                ]
-            },
-            {
-                id: "sealing",
-                name: "Sealing",
-                icon: "fa-shield-halved",
-                color: "teal",
-                tasks: [
-                    { name: "Vinyl Seal (regular strength)", suggestedHours: 0.75, suggestedCost: 24 },
-                    { name: "Vinyl Seal (thin / wash coat)", suggestedHours: 0.5, suggestedCost: 18 },
-                    { name: "Spray shellac sealer", suggestedHours: 0.75, suggestedCost: 16 },
-                    { name: "Wipe-on shellac sealer", suggestedHours: 0.5, suggestedCost: 12 },
-                    { name: "Polyurethane sealer", suggestedHours: 0.75, suggestedCost: 20 }
-                ]
-            },
-            {
-                id: "intra-finish",
-                name: "Intra-Finish Color & Treatment",
-                icon: "fa-paint-brush",
-                color: "fuchsia",
-                tasks: [
-                    { name: "NGR toning", suggestedHours: 0.75, suggestedCost: 14 },
-                    { name: "Can / aerosol toning", suggestedHours: 0.5, suggestedCost: 12 },
-                    { name: "In-painting / touch-up coloring", suggestedHours: 0.75, suggestedCost: 10 },
-                    { name: "Grain fill", suggestedHours: 1.0, suggestedCost: 16 },
-                    { name: "Glaze application", suggestedHours: 0.75, suggestedCost: 12 }
-                ]
-            },
-            {
-                id: "finish-prep",
-                name: "Final Finish Prep",
-                icon: "fa-hand-sparkles",
-                color: "sky",
-                tasks: [
-                    { name: "Wax wash between coats", suggestedHours: 0.5, suggestedCost: 6 },
-                    { name: "400 hand sand", suggestedHours: 0.5, suggestedCost: 2 },
-                    { name: "600 hand sand", suggestedHours: 0.5, suggestedCost: 2 },
-                    { name: "400/600 orbital sand", suggestedHours: 0.5, suggestedCost: 2 }
+                id: "color-seal",
+                title: "Coloring, Sealing & Build Coats",
+                icon: "🎨",
+                steps: [
+                    {id: "dye-stain", label: "Dye tone / solvent / oil stain", defaultHours: 1},
+                    {id: "grain-fill", label: "Grain fill / pore filler", defaultHours: 0.75},
+                    {id: "sealing", label: "Sealing (vinyl seal / shellac / poly sealer)", defaultHours: 2}
                 ]
             },
             {
                 id: "top-coat",
-                name: "Top Coat",
-                icon: "fa-layer-group",
-                color: "amber",
-                tasks: [
-                    { name: "Pre-catalyzed lacquer (build + sheen)", suggestedHours: 2.5, suggestedCost: 55, note: "Specify sheen in notes (satin/semigloss)" },
-                    { name: "Post-catalyzed lacquer", suggestedHours: 2.0, suggestedCost: 48 },
-                    { name: "Polyurethane top coat", suggestedHours: 1.5, suggestedCost: 32 },
-                    { name: "Shellac top coat (or tinted)", suggestedHours: 1.0, suggestedCost: 20 },
-                    { name: "Paint / enamel finish", suggestedHours: 1.5, suggestedCost: 28 }
+                title: "Top Coating",
+                icon: "🖌️",
+                steps: [
+                    {id: "top-coat-app", label: "Top Coat Application", defaultHours: 4, note: "Specify type, # of coats & sheen in notes"}
                 ]
             },
             {
-                id: "assembly-touchup",
-                name: "Assembly, Touch-Up & Final",
-                icon: "fa-check-double",
-                color: "emerald",
-                tasks: [
-                    { name: "Install / re-install hardware", suggestedHours: 1.0, suggestedCost: 15 },
-                    { name: "Refit pieces & drawers", suggestedHours: 0.75, suggestedCost: 0 },
-                    { name: "Ensure smooth operation", suggestedHours: 0.5, suggestedCost: 0 },
-                    { name: "Final stain & finish touch-up", suggestedHours: 0.75, suggestedCost: 10 },
-                    { name: "Final inspection, cleaning & detailing", suggestedHours: 0.75, suggestedCost: 5 }
+                id: "assembly",
+                title: "Assembly, Hardware & Final",
+                icon: "🔧",
+                steps: [
+                    {id: "install-hardware", label: "Install / re-install hardware", defaultHours: 1},
+                    {id: "refit-pieces", label: "Refit pieces & drawers", defaultHours: 0.75},
+                    {id: "final-inspection", label: "Final inspection, cleaning & detailing", defaultHours: 0.75}
                 ]
             }
-        ];
+        ]
 
-        let procurementRows = 0;
-        let currentFilter = '';
+        let procurementItems = []
+        let laborRate = 100
+        let currentFilter = ''
 
-        function createCategoryHTML(cat) {
-            let html = `
-                <div id="cat-${cat.id}" class="category-card bg-white rounded-3xl border border-stone-200 overflow-hidden" data-category-id="${cat.id}">
-                    <div onclick="toggleCategory('${cat.id}')" class="section-header px-6 py-4 flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center gap-x-4 flex-1 min-w-0">
-                            <div class="w-9 h-9 flex-shrink-0 bg-${cat.color}-100 text-${cat.color}-700 rounded-2xl flex items-center justify-center">
-                                <i class="fa-solid ${cat.icon}"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <div class="font-semibold text-lg">${cat.name}</div>
-                                <div class="flex items-center gap-x-3 text-xs mt-0.5">
-                                    <span class="process-badge bg-stone-100 text-stone-600 rounded-full px-2 py-px">${cat.tasks.length} steps</span>
-                                    <span id="selected-count-${cat.id}" class="font-medium text-amber-700"></span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-x-4">
-                            <div class="hidden md:block w-24">
-                                <div class="category-progress"><div class="category-progress-bar" id="progress-${cat.id}" style="width: 0%"></div></div>
-                            </div>
-                            
-                            <div class="subtotal-pill px-4 py-1 rounded-2xl flex items-center gap-x-3 text-xs shadow-inner">
-                                <div><span class="section-hours font-mono font-semibold" data-cat="${cat.id}">0.00</span> <span class="text-stone-500">hrs</span></div>
-                                <div class="w-px h-3 bg-stone-300"></div>
-                                <div>$<span class="section-cost font-mono font-semibold" data-cat="${cat.id}">0.00</span></div>
-                            </div>
-                            
-                            <i class="fa-solid fa-chevron-down text-stone-400 transition-transform" id="chevron-${cat.id}"></i>
-                        </div>
-                    </div>
-                    
-                    <div id="content-${cat.id}" class="accordion-content hidden border-t border-stone-100">
-                        <div class="p-5">
-                            <div class="flex justify-between items-center mb-3 px-1">
-                                <div class="flex gap-x-2">
-                                    <button onclick="selectAllInCategory('${cat.id}', true)" class="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 rounded-2xl font-medium hover:bg-emerald-200">Select All</button>
-                                    <button onclick="selectAllInCategory('${cat.id}', false)" class="text-xs px-3 py-1 bg-stone-100 text-stone-600 rounded-2xl font-medium hover:bg-stone-200">Deselect All</button>
-                                </div>
-                                <div id="progress-text-${cat.id}" class="text-xs text-stone-500 font-medium"></div>
-                            </div>
-                            
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="text-xs text-stone-500 border-b">
-                                        <th class="w-8 pb-2"></th>
-                                        <th class="text-left pb-2 font-medium">Task / Step</th>
-                                        <th class="w-20 text-center pb-2 font-medium">Hours</th>
-                                        <th class="w-24 text-right pb-2 font-medium">Product $</th>
-                                        <th class="pb-2 font-medium pl-3">Notes</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="task-rows" data-category="${cat.id}">
-            `;
-
-            cat.tasks.forEach((task, index) => {
-                const taskId = `${cat.id}-${index}`;
-                html += `
-                    <tr class="task-row border-b last:border-none" data-task-name="${task.name.toLowerCase()}">
-                        <td class="py-2.5 pr-1">
-                            <input type="checkbox" class="include-check w-4 h-4 accent-amber-700" checked data-cat="${cat.id}" data-task="${index}">
-                        </td>
-                        <td class="py-2.5 pr-3">
-                            <label class="task-name cursor-pointer">${task.name}</label>
-                            ${task.note ? `<div class="text-[10px] text-stone-400">${task.note}</div>` : ''}
-                        </td>
-                        <td class="py-2.5">
-                            <input type="number" step="0.25" min="0" value="${task.suggestedHours || 0}" 
-                                   class="hours-input compact-input w-full text-center border border-stone-200 focus:border-amber-700 rounded-2xl px-2 py-1 font-mono text-sm"
-                                   data-cat="${cat.id}" data-task="${index}">
-                        </td>
-                        <td class="py-2.5">
-                            <div class="flex justify-end">
-                                <div class="relative w-24">
-                                    <span class="absolute left-3 top-1/2 -mt-1.5 text-stone-400">$</span>
-                                    <input type="number" step="0.01" min="0" value="${task.suggestedCost || 0}" 
-                                           class="cost-input compact-input w-full text-right border border-stone-200 focus:border-amber-700 rounded-2xl pl-6 pr-2 py-1 font-mono text-sm"
-                                           data-cat="${cat.id}" data-task="${index}">
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-2.5 pl-3">
-                            <input type="text" class="notes-input compact-input w-full text-sm border border-stone-200 focus:border-amber-700 rounded-2xl px-3 py-1" 
-                                   placeholder="Notes..." value="">
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table>
-                            <button onclick="addCustomTaskRow('${cat.id}', this)" class="mt-4 text-xs flex items-center gap-x-1.5 px-3.5 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-2xl font-medium">
-                                <i class="fa-solid fa-plus fa-sm"></i> <span>Add custom step</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            return html;
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('categories-container');
-            container.innerHTML = '';
-            categories.forEach(cat => {
-                container.innerHTML += createCategoryHTML(cat);
-            });
-            attachEventListeners();
-        }
-
-        function toggleCategory(catId) {
-            const content = document.getElementById(`content-${catId}`);
-            const chevron = document.getElementById(`chevron-${catId}`);
-            if (!content) return;
-            
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                if (chevron) chevron.classList.add('fa-rotate-180');
-            } else {
-                content.classList.add('hidden');
-                if (chevron) chevron.classList.remove('fa-rotate-180');
-            }
-        }
-
-        function expandAllCategories() {
-            document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('hidden'));
-            document.querySelectorAll('[id^="chevron-"]').forEach(el => el.classList.add('fa-rotate-180'));
-        }
-        
-        function collapseAllCategories() {
-            document.querySelectorAll('.accordion-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="chevron-"]').forEach(el => el.classList.remove('fa-rotate-180'));
-        }
-
-        function selectAllInCategory(catId, select) {
-            const section = document.getElementById(`cat-${catId}`);
-            if (!section) return;
-            section.querySelectorAll('.include-check').forEach(cb => cb.checked = select);
-            updateAllTotals();
-        }
-
-        function updateCategoryUI(catId) {
-            const section = document.getElementById(`cat-${catId}`);
-            if (!section) return;
-
-            let selected = 0;
-            let total = 0;
-            let hours = 0;
-            let cost = 0;
-
-            section.querySelectorAll('tbody.task-rows tr').forEach(row => {
-                total++;
-                const check = row.querySelector('.include-check');
-                if (check && check.checked) {
-                    selected++;
-                    const h = parseFloat(row.querySelector('.hours-input')?.value) || 0;
-                    const c = parseFloat(row.querySelector('.cost-input')?.value) || 0;
-                    hours += h;
-                    cost += c;
-                }
-            });
-
-            // Update selected count
-            const countEl = document.getElementById(`selected-count-${catId}`);
-            if (countEl) countEl.textContent = `${selected}/${total} selected`;
-
-            // Update progress bar
-            const progress = total > 0 ? Math.round((selected / total) * 100) : 0;
-            const progressBar = document.getElementById(`progress-${catId}`);
-            if (progressBar) progressBar.style.width = `${progress}%`;
-
-            const progressText = document.getElementById(`progress-text-${catId}`);
-            if (progressText) progressText.textContent = `${selected}/${total}`;
-
-            // Update subtotals
-            const hSpan = section.querySelector(`.section-hours[data-cat="${catId}"]`);
-            const cSpan = section.querySelector(`.section-cost[data-cat="${catId}"]`);
-            if (hSpan) hSpan.textContent = hours.toFixed(2);
-            if (cSpan) cSpan.textContent = cost.toFixed(2);
-        }
-
-        function updateAllTotals() {
-            let totalHours = 0;
-            let totalMaterials = 0;
-
-            document.querySelectorAll('.category-card').forEach(section => {
-                const catId = section.id.replace('cat-', '');
-                let secHours = 0;
-                let secCost = 0;
-
-                section.querySelectorAll('tbody.task-rows tr').forEach(row => {
-                    const check = row.querySelector('.include-check');
-                    if (check && check.checked) {
-                        const h = parseFloat(row.querySelector('.hours-input')?.value) || 0;
-                        const c = parseFloat(row.querySelector('.cost-input')?.value) || 0;
-                        secHours += h;
-                        secCost += c;
-                    }
-                });
-
-                totalHours += secHours;
-                totalMaterials += secCost;
-
-                updateCategoryUI(catId);
-            });
-
-            const procTotal = getProcurementTotal();
-            totalMaterials += procTotal;
-
-            const rate = parseFloat(document.getElementById('labor-rate').value) || 100;
-            const laborCost = totalHours * rate;
-            const grandTotal = laborCost + totalMaterials;
-
-            document.getElementById('total-hours').textContent = totalHours.toFixed(2);
-            document.getElementById('labor-cost').textContent = '$' + laborCost.toFixed(0);
-            document.getElementById('materials-cost').textContent = '$' + totalMaterials.toFixed(0);
-            document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(0);
-
-            updateProcurementTotalDisplay();
-
-            // Global selected count
-            let globalSelected = 0;
-            let globalTotal = 0;
-            document.querySelectorAll('.include-check').forEach(cb => {
-                globalTotal++;
-                if (cb.checked) globalSelected++;
-            });
-            const globalEl = document.getElementById('global-selected-count');
-            if (globalEl) globalEl.textContent = `${globalSelected} of ${globalTotal} steps selected`;
-
-            saveToLocalStorage();
-        }
-
-        function filterTasks() {
-            const term = document.getElementById('global-search').value.toLowerCase().trim();
-            currentFilter = term;
-            const countEl = document.getElementById('search-results-count');
-
-            let visibleCount = 0;
-
-            document.querySelectorAll('.category-card').forEach(section => {
-                let hasMatch = false;
-                const catId = section.id.replace('cat-', '');
-                const content = document.getElementById(`content-${catId}`);
-
-                section.querySelectorAll('tbody.task-rows tr').forEach(row => {
-                    const name = row.dataset.taskName || '';
-                    const match = term === '' || name.includes(term);
-                    
-                    if (match) {
-                        row.style.display = '';
-                        hasMatch = true;
-                        visibleCount++;
-                        
-                        // highlight
-                        const label = row.querySelector('.task-name');
-                        if (label && term) {
-                            const original = label.textContent;
-                            const regex = new RegExp(`(${term})`, 'gi');
-                            label.innerHTML = original.replace(regex, '<span class="search-highlight">$1</span>');
-                        }
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                if (term !== '' && hasMatch && content && content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    const chev = document.getElementById(`chevron-${catId}`);
-                    if (chev) chev.classList.add('fa-rotate-180');
-                }
-                
-                if (term !== '' && !hasMatch) {
-                    section.style.display = 'none';
-                } else {
-                    section.style.display = '';
-                }
-            });
-
-            if (term) {
-                countEl.textContent = `${visibleCount} matches`;
-                countEl.classList.remove('hidden');
-            } else {
-                countEl.classList.add('hidden');
-                // reset highlights
-                document.querySelectorAll('.search-highlight').forEach(el => {
-                    el.outerHTML = el.textContent;
-                });
-            }
-        }
-
-        function setLaborRate(rate) {
-            document.getElementById('labor-rate').value = rate;
-            // highlight active preset
-            document.querySelectorAll('.rate-preset').forEach(btn => {
-                btn.classList.remove('active', 'bg-amber-900', 'text-white', 'border-amber-900');
-                if (parseInt(btn.textContent) === rate) {
-                    btn.classList.add('active', 'bg-amber-900', 'text-white', 'border-amber-900');
-                }
-            });
-            updateAllTotals();
-        }
-
-        function attachEventListeners() {
-            const container = document.getElementById('categories-container');
-
-            container.addEventListener('input', (e) => {
-                if (e.target.classList.contains('hours-input') || 
-                    e.target.classList.contains('cost-input') ||
-                    e.target.classList.contains('include-check')) {
-                    updateAllTotals();
-                }
-            });
-
-            container.addEventListener('change', (e) => {
-                if (e.target.classList.contains('include-check')) {
-                    updateAllTotals();
-                }
-            });
-
-            const rateInput = document.getElementById('labor-rate');
-            if (rateInput) rateInput.addEventListener('input', updateAllTotals);
-
-            // Project fields
-            ['project-name','customer-name','customer-phone','customer-email','completion-date','project-notes'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', saveToLocalStorage);
-            });
-
-            // Initial calculation
-            setTimeout(updateAllTotals, 150);
-        }
-
-        // Procurement functions (same as v1 but improved)
-        function addProcurementRow(preFill = null) {
-            const tbody = document.getElementById('procurement-tbody');
-            const rowId = `proc-row-${procurementRows++}`;
-            const row = document.createElement('tr');
-            row.className = 'border-b procurement-row';
-            row.id = rowId;
-
-            const item = preFill?.item || '';
-            const qty = preFill?.qty || 1;
-            const unit = preFill?.unitCost || 0;
-            const lead = preFill?.lead || '';
-
-            row.innerHTML = `
-                <td class="py-2 pr-2"><input type="text" class="proc-item w-full border border-stone-200 focus:border-amber-700 rounded-2xl px-3 py-1.5 text-sm" placeholder="Item description" value="${item}"></td>
-                <td class="py-2 text-center"><input type="number" step="1" value="${qty}" class="proc-qty w-16 text-center border border-stone-200 focus:border-amber-700 rounded-2xl px-2 py-1.5 font-mono text-sm"></td>
-                <td class="py-2"><div class="flex justify-end"><div class="relative w-20"><span class="absolute left-2.5 top-1/2 -mt-1.5 text-stone-400 text-xs">$</span><input type="number" step="0.01" value="${unit}" class="proc-unit w-full text-right border border-stone-200 focus:border-amber-700 rounded-2xl pl-5 pr-2 py-1.5 font-mono text-sm"></div></div></td>
-                <td class="py-2 text-right font-mono text-sm pr-1"><span class="proc-line-total font-semibold">$0.00</span></td>
-                <td class="py-2 pl-2"><input type="text" class="proc-lead w-full border border-stone-200 focus:border-amber-700 rounded-2xl px-3 py-1.5 text-sm" placeholder="Lead time" value="${lead}"></td>
-                <td class="py-2 text-center"><input type="checkbox" class="proc-ordered w-4 h-4 accent-emerald-600"></td>
-                <td class="py-2 text-center"><button onclick="removeProcurementRow('${rowId}')" class="text-stone-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button></td>
-            `;
-            tbody.appendChild(row);
-
-            row.querySelectorAll('input').forEach(inp => {
-                inp.addEventListener('input', () => {
-                    updateProcurementLineTotal(row);
-                    updateAllTotals();
-                });
-            });
-            updateProcurementLineTotal(row);
-            updateAllTotals();
-        }
-
-        function addCommonHardware() {
-            const examples = [
-                { item: "Brass bail pulls (period correct)", qty: 4, unitCost: 18, lead: "In stock - 2 days" },
-                { item: "Brass escutcheons", qty: 2, unitCost: 12, lead: "In stock" },
-                { item: "Bookmatched mahogany veneer (sq ft)", qty: 3, unitCost: 28, lead: "Special order 7-10 days" },
-                { item: "Shellac (1 qt)", qty: 1, unitCost: 32, lead: "In stock" }
-            ];
-            examples.forEach(ex => addProcurementRow(ex));
-        }
-
-        function removeProcurementRow(rowId) {
-            const row = document.getElementById(rowId);
-            if (row) { row.remove(); updateAllTotals(); }
-        }
-
-        function updateProcurementLineTotal(row) {
-            const qty = parseFloat(row.querySelector('.proc-qty')?.value) || 0;
-            const unit = parseFloat(row.querySelector('.proc-unit')?.value) || 0;
-            const totalEl = row.querySelector('.proc-line-total');
-            if (totalEl) totalEl.textContent = '$' + (qty * unit).toFixed(2);
-        }
-
-        function getProcurementTotal() {
-            let total = 0;
-            document.querySelectorAll('#procurement-tbody tr').forEach(row => {
-                const qty = parseFloat(row.querySelector('.proc-qty')?.value) || 0;
-                const unit = parseFloat(row.querySelector('.proc-unit')?.value) || 0;
-                total += qty * unit;
-            });
-            return total;
-        }
-
-        function updateProcurementTotalDisplay() {
-            const total = getProcurementTotal();
-            const el = document.getElementById('procurement-total');
-            if (el) el.textContent = '$' + total.toFixed(2);
-        }
-
-        function toggleProcurement() {
-            const content = document.getElementById('procurement-content');
-            const chevron = document.getElementById('procurement-chevron');
-            if (!content) return;
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                if (chevron) chevron.classList.add('fa-rotate-180');
-            } else {
-                content.classList.add('hidden');
-                if (chevron) chevron.classList.remove('fa-rotate-180');
-            }
-        }
-
-        function addCustomTaskRow(catId, button) {
-            const tbody = button.closest('.accordion-content').querySelector('tbody.task-rows');
-            if (!tbody) return;
-
-            const newRow = document.createElement('tr');
-            newRow.className = 'task-row border-b last:border-none';
-            newRow.innerHTML = `
-                <td class="py-2.5 pr-1"><input type="checkbox" class="include-check w-4 h-4 accent-amber-700" checked></td>
-                <td class="py-2.5 pr-3"><input type="text" class="custom-task-name w-full border border-amber-300 focus:border-amber-700 rounded-2xl px-3 py-1 text-sm font-medium" value="Custom step"></td>
-                <td class="py-2.5"><input type="number" step="0.25" value="0.5" class="hours-input compact-input w-full text-center border border-stone-200 focus:border-amber-700 rounded-2xl px-2 py-1 font-mono text-sm"></td>
-                <td class="py-2.5"><div class="flex justify-end"><div class="relative w-24"><span class="absolute left-3 top-1/2 -mt-1.5 text-stone-400">$</span><input type="number" step="0.01" value="0" class="cost-input compact-input w-full text-right border border-stone-200 focus:border-amber-700 rounded-2xl pl-6 pr-2 py-1 font-mono text-sm"></div></div></td>
-                <td class="py-2.5 pl-3"><input type="text" class="notes-input compact-input w-full text-sm border border-stone-200 focus:border-amber-700 rounded-2xl px-3 py-1" placeholder="Notes"></td>
-            `;
-            tbody.appendChild(newRow);
-            setTimeout(updateAllTotals, 50);
-        }
-
-        // Persistence, demo, print functions (trimmed for brevity but fully functional)
-        function saveToLocalStorage() { /* same robust implementation as v1 */ 
+        // Safe localStorage
+        function safeLocalStorageGet(key, defaultValue) {
             try {
-                const state = {
-                    projectName: document.getElementById('project-name').value,
-                    customerName: document.getElementById('customer-name').value,
-                    laborRate: parseFloat(document.getElementById('labor-rate').value) || 100,
-                    categories: {},
-                    procurement: []
-                };
-                document.querySelectorAll('.category-card').forEach(section => {
-                    const catId = section.id.replace('cat-', '');
-                    const tasksData = [];
-                    section.querySelectorAll('tbody.task-rows tr').forEach(row => {
-                        tasksData.push({
-                            checked: row.querySelector('.include-check')?.checked ?? true,
-                            hours: parseFloat(row.querySelector('.hours-input')?.value) || 0,
-                            cost: parseFloat(row.querySelector('.cost-input')?.value) || 0,
-                            notes: row.querySelector('.notes-input')?.value || '',
-                            customName: row.querySelector('.custom-task-name')?.value || null
-                        });
-                    });
-                    state.categories[catId] = tasksData;
-                });
-                localStorage.setItem('restorMateV2State', JSON.stringify(state));
+                if (typeof localStorage !== 'undefined') {
+                    const item = localStorage.getItem(key)
+                    return item ? JSON.parse(item) : defaultValue
+                }
+            } catch(e) {}
+            return defaultValue
+        }
+
+        function safeLocalStorageSet(key, value) {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(key, JSON.stringify(value))
+                }
             } catch(e) {}
         }
 
-        function loadFromLocalStorage() {
-            try {
-                const saved = localStorage.getItem('restorMateV2State');
-                if (!saved) return false;
-                const state = JSON.parse(saved);
-                if (state.projectName) document.getElementById('project-name').value = state.projectName;
-                if (state.customerName) document.getElementById('customer-name').value = state.customerName;
-                if (state.laborRate) {
-                    document.getElementById('labor-rate').value = state.laborRate;
-                }
-                // Restore category values
-                Object.keys(state.categories || {}).forEach(catId => {
-                    const section = document.getElementById(`cat-${catId}`);
-                    if (!section) return;
-                    const rows = section.querySelectorAll('tbody.task-rows tr');
-                    (state.categories[catId] || []).forEach((data, i) => {
-                        if (!rows[i]) return;
-                        const row = rows[i];
-                        if (row.querySelector('.include-check')) row.querySelector('.include-check').checked = data.checked;
-                        if (row.querySelector('.hours-input')) row.querySelector('.hours-input').value = data.hours;
-                        if (row.querySelector('.cost-input')) row.querySelector('.cost-input').value = data.cost;
-                        if (row.querySelector('.notes-input')) row.querySelector('.notes-input').value = data.notes;
-                        if (data.customName && row.querySelector('.custom-task-name')) {
-                            row.querySelector('.custom-task-name').value = data.customName;
-                        }
-                    });
-                });
-                setTimeout(updateAllTotals, 200);
-                return true;
-            } catch(e) { return false; }
+        // Calculate totals
+        function calculateTotals() {
+            let totalHours = 0
+            let totalMaterials = 0
+
+            // Sum from buckets
+            bucketsData.forEach(bucket => {
+                bucket.steps.forEach(step => {
+                    const hoursEl = document.getElementById(`hours-${bucket.id}-${step.id}`)
+                    const matEl = document.getElementById(`mat-${bucket.id}-${step.id}`)
+                    if (hoursEl) totalHours += parseFloat(hoursEl.value) || 0
+                    if (matEl) totalMaterials += parseFloat(matEl.value) || 0
+                })
+            })
+
+            // Add procurement
+            procurementItems.forEach(item => {
+                totalMaterials += (parseFloat(item.cost) || 0) * (parseFloat(item.qty) || 1)
+            })
+
+            const laborCost = totalHours * laborRate
+
+            // Update UI
+            document.getElementById('total-hours').textContent = totalHours.toFixed(2)
+            document.getElementById('total-labor').textContent = '$' + Math.round(laborCost)
+            document.getElementById('total-materials').textContent = '$' + Math.round(totalMaterials)
+            document.getElementById('grand-total').textContent = '$' + Math.round(laborCost + totalMaterials)
+
+            // Update project name in total bar
+            const projName = document.getElementById('project-name').value || 'Project'
+            document.getElementById('project-name-top').textContent = projName
         }
 
-        function loadDemoData() {
-            if (!confirm('Load improved demo data for a typical restoration project?')) return;
-            
-            document.getElementById('project-name').value = 'Mahogany Federal Side Table - Full Restoration';
-            document.getElementById('customer-name').value = 'Robert Kline';
-            document.getElementById('labor-rate').value = '125';
-            
-            // Set some realistic values
-            const repair = document.getElementById('cat-repair');
-            if (repair) {
-                const rows = repair.querySelectorAll('tbody tr');
-                if (rows[0]) { rows[0].querySelector('.hours-input').value = '2.5'; rows[0].querySelector('.cost-input').value = '65'; }
-                if (rows[1]) { rows[1].querySelector('.hours-input').value = '1.5'; rows[1].querySelector('.cost-input').value = '28'; }
+        // Render buckets
+        function renderBuckets() {
+            const container = document.getElementById('buckets-container')
+            container.innerHTML = ''
+
+            bucketsData.forEach(bucket => {
+                let stepHTML = ''
+                let selectedCount = 0
+                let totalSteps = bucket.steps.length
+
+                bucket.steps.forEach(step => {
+                    const hoursId = `hours-${bucket.id}-${step.id}`
+                    const matId = `mat-${bucket.id}-${step.id}`
+                    const noteId = `note-${bucket.id}-${step.id}`
+
+                    // Check if matches filter
+                    const matches = !currentFilter || 
+                        step.label.toLowerCase().includes(currentFilter.toLowerCase())
+
+                    if (!matches) return
+
+                    stepHTML += `
+                    <div class="step-row flex items-center gap-x-4 px-5 py-4 border-b last:border-0">
+                        <input type="checkbox" id="check-${bucket.id}-${step.id}" 
+                               onchange="calculateTotals()" class="w-5 h-5 accent-amber-600">
+                        <div class="flex-1">
+                            <label for="check-${bucket.id}-${step.id}" class="font-medium cursor-pointer">${step.label}</label>
+                            ${step.note ? `<p class="text-xs text-amber-500">${step.note}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-x-6 text-right">
+                            <div>
+                                <span class="text-xs text-amber-400">HOURS</span>
+                                <input id="${hoursId}" type="number" step="0.25" min="0" value="0" 
+                                       onchange="calculateTotals()" 
+                                       class="w-20 text-right border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-1 text-lg font-medium">
+                            </div>
+                            <div>
+                                <span class="text-xs text-amber-400">MAT. $</span>
+                                <input id="${matId}" type="number" step="1" min="0" value="0" 
+                                       onchange="calculateTotals()" 
+                                       class="w-20 text-right border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-1 text-lg font-medium">
+                            </div>
+                            <textarea id="${noteId}" rows="1" placeholder="notes..." 
+                                      oninput="calculateTotals()" 
+                                      class="w-56 text-xs border border-amber-200 focus:border-amber-400 rounded-2xl px-3 py-1 resize-none"></textarea>
+                        </div>
+                    </div>`
+                })
+
+                if (stepHTML === '') return // no matching steps
+
+                const bucketHTML = `
+                <div class="bg-white rounded-3xl shadow overflow-hidden">
+                    <div onclick="toggleBucket(this)" class="accordion-header px-8 py-5 flex items-center justify-between cursor-pointer bg-amber-50">
+                        <div class="flex items-center gap-x-4">
+                            <span class="text-2xl">${bucket.icon}</span>
+                            <div>
+                                <h3 class="font-semibold text-amber-900">${bucket.title}</h3>
+                                <p class="text-xs text-amber-500">${totalSteps} steps</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-x-6">
+                            <div class="text-right">
+                                <div class="flex items-center gap-x-1 text-emerald-600">
+                                    <span id="selected-count-${bucket.id}" class="font-mono text-sm">0/${totalSteps}</span>
+                                </div>
+                            </div>
+                            <i onclick="event.stopImmediatePropagation(); toggleAllInBucket('${bucket.id}');" 
+                               class="fa-solid fa-check-double text-amber-400 hover:text-amber-600 cursor-pointer"></i>
+                            <i class="fa-solid fa-chevron-down transition-transform"></i>
+                        </div>
+                    </div>
+                    <div class="bucket-content hidden px-2">
+                        ${stepHTML}
+                    </div>
+                </div>`
+
+                container.innerHTML += bucketHTML
+            })
+
+            // Re-apply saved values if any (but defaults to 0)
+            calculateTotals()
+        }
+
+        function toggleBucket(header) {
+            const content = header.nextElementSibling
+            content.classList.toggle('hidden')
+            const icon = header.querySelector('.fa-chevron-down')
+            if (icon) icon.style.transform = content.classList.contains('hidden') ? '' : 'rotate(180deg)'
+        }
+
+        function toggleAllInBucket(bucketId) {
+            // Simple toggle all (select/deselect)
+            const checks = document.querySelectorAll(`[id^="check-${bucketId}-"]`)
+            const firstChecked = checks[0] ? checks[0].checked : false
+            checks.forEach(chk => chk.checked = !firstChecked)
+            calculateTotals()
+        }
+
+        function filterBuckets() {
+            currentFilter = document.getElementById('global-search').value
+            renderBuckets()
+        }
+
+        function clearSearch() {
+            document.getElementById('global-search').value = ''
+            currentFilter = ''
+            renderBuckets()
+        }
+
+        // Procurement functions
+        function renderProcurement() {
+            const container = document.getElementById('procurement-list')
+            container.innerHTML = ''
+            let totalParts = 0
+
+            procurementItems.forEach((item, index) => {
+                const lineTotal = (parseFloat(item.qty) || 1) * (parseFloat(item.cost) || 0)
+                totalParts += lineTotal
+
+                container.innerHTML += `
+                <div class="flex items-center gap-x-3 bg-amber-50 rounded-2xl p-4">
+                    <input type="text" value="${item.name}" 
+                           onchange="updateProcurement(${index}, 'name', this.value)" 
+                           class="flex-1 bg-transparent text-sm font-medium focus:outline-none">
+                    <input type="number" value="${item.qty || 1}" step="1" min="1"
+                           onchange="updateProcurement(${index}, 'qty', this.value)" class="w-16 text-center border border-transparent focus:border-amber-300 rounded-xl">
+                    <input type="number" value="${item.cost || 0}" step="1"
+                           onchange="updateProcurement(${index}, 'cost', this.value)" class="w-20 text-right border border-transparent focus:border-amber-300 rounded-xl">
+                    <div class="font-semibold text-emerald-600 w-20 text-right">$${(lineTotal).toFixed(0)}</div>
+                    <button onclick="removeProcurementItem(${index})" class="text-red-300 hover:text-red-500">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>`
+            })
+
+            if (procurementItems.length === 0) {
+                container.innerHTML = `<p class="text-amber-400 italic text-center py-6">No parts added yet</p>`
             }
+            calculateTotals()
+        }
+
+        function addProcurementItem() {
+            procurementItems.push({name: 'New part', qty: 1, cost: 0})
+            renderProcurement()
+        }
+
+        function updateProcurement(index, field, value) {
+            if (field === 'qty' || field === 'cost') {
+                procurementItems[index][field] = parseFloat(value) || 0
+            } else {
+                procurementItems[index][field] = value
+            }
+            renderProcurement()
+        }
+
+        function removeProcurementItem(index) {
+            procurementItems.splice(index, 1)
+            renderProcurement()
+        }
+
+        function addCommonHardware() {
+            const commons = [
+                {name: 'Brass pulls (set of 4)', qty: 1, cost: 85},
+                {name: 'Veneer sheet (mahogany)', qty: 2, cost: 45},
+                {name: 'Escutcheon plates', qty: 4, cost: 18},
+                {name: 'Drawer slides (pair)', qty: 2, cost: 65}
+            ]
+            procurementItems = [...procurementItems, ...commons]
+            renderProcurement()
+        }
+
+        // Rate presets
+        function createRatePresets() {
+            const container = document.getElementById('rate-presets')
+            const rates = [75, 100, 125, 150]
+            let html = ''
+            rates.forEach(rate => {
+                const active = rate === laborRate ? 'bg-amber-100 text-amber-700 font-semibold' : 'hover:bg-amber-50'
+                html += `<button onclick="setLaborRate(${rate});" class="px-4 py-1 text-xs rounded-3xl ${active}">${rate}</button>`
+            })
+            container.innerHTML = html
+        }
+
+        function setLaborRate(rate) {
+            laborRate = rate
+            createRatePresets()
+            calculateTotals()
+        }
+
+        // Demo data
+        function loadDemo() {
+            // Clear first
+            clearAll(true)
             
-            const topCoat = document.getElementById('cat-top-coat');
-            if (topCoat) {
-                const rows = topCoat.querySelectorAll('tbody tr');
-                if (rows[0]) { rows[0].querySelector('.hours-input').value = '3.0'; rows[0].querySelector('.cost-input').value = '75'; rows[0].querySelector('.notes-input').value = '4 coats, satin'; }
+            document.getElementById('project-name').value = 'Mahogany Side Table Restoration'
+            document.getElementById('customer-name').value = 'Jane Thompson'
+            document.getElementById('customer-email').value = 'jane.t@email.com'
+            document.getElementById('notes').value = 'Preserve original patina where possible'
+
+            // Set some sample hours (still start from zero but demo populates reasonable values)
+            // For demo we set realistic numbers
+            const sampleData = {
+                "intake-visual-assessment": 0.75,
+                "intake-inventory-hardware": 0.5,
+                "repair-veneer-repair": 2,
+                "repair-joint-repair": 1.5,
+                "repair-structural-repair": 1,
+                "surface-prep-progressive-sanding": 2.5,
+                "color-seal-dye-stain": 1,
+                "color-seal-sealing": 2,
+                "top-coat-top-coat-app": 4,
+                "assembly-install-hardware": 1
             }
 
-            // Add procurement examples
-            document.getElementById('procurement-tbody').innerHTML = '';
-            addProcurementRow({ item: "Period brass bail pulls (set of 4)", qty: 2, unitCost: 48, lead: "In stock - 3 days" });
-            addProcurementRow({ item: "Bookmatched mahogany veneer", qty: 1, unitCost: 85, lead: "Special order 7-10 days" });
+            Object.keys(sampleData).forEach(key => {
+                const el = document.getElementById('hours-' + key.replace('-', '-'))
+                if (el) el.value = sampleData[key]
+            })
 
-            setTimeout(() => {
-                expandAllCategories();
-                updateAllTotals();
-            }, 100);
+            // Add some procurement
+            procurementItems = [
+                {name: 'Brass pulls (set of 4)', qty: 1, cost: 85},
+                {name: 'Veneer sheet (mahogany)', qty: 2, cost: 45}
+            ]
+
+            renderProcurement()
+            renderBuckets()
+            calculateTotals()
         }
 
-        function clearAllData() {
-            if (!confirm('Clear everything?')) return;
-            localStorage.removeItem('restorMateV2State');
-            location.reload();
+        function clearAll(keepDemo = false) {
+            if (!keepDemo && !confirm('Clear everything and start fresh?')) return
+            
+            procurementItems = []
+            document.getElementById('project-name').value = ''
+            document.getElementById('customer-name').value = ''
+            document.getElementById('customer-email').value = ''
+            document.getElementById('notes').value = ''
+            
+            // Re-render buckets with zero values
+            renderBuckets()
+            renderProcurement()
+            calculateTotals()
         }
 
-        function generatePrintContent() {
-            const content = document.getElementById('print-preview-content');
-            const projectName = document.getElementById('project-name').value || 'Restoration Project';
-            const customer = document.getElementById('customer-name').value || 'Client';
-            const rate = parseFloat(document.getElementById('labor-rate').value) || 100;
-
-            let html = `<div class="max-w-[800px] mx-auto">
-                <div class="flex justify-between border-b pb-6">
-                    <div><div class="flex items-center gap-x-3"><div class="w-10 h-10 bg-amber-900 rounded-2xl flex items-center justify-center"><i class="fa-solid fa-tools text-white text-2xl"></i></div><div><div class="font-semibold text-3xl heading-serif">RestorMate</div><div class="text-xs text-stone-500">Professional Restoration</div></div></div></div>
-                    <div class="text-right text-sm"><div class="font-semibold">ESTIMATE</div><div class="text-xs">Date: ${new Date().toLocaleDateString()}</div></div>
+        // Preview - DETAILED like v2
+        function showPreview() {
+            const modal = document.getElementById('preview-modal')
+            const content = document.getElementById('preview-content')
+            
+            let html = `
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-baseline mb-8">
+                    <div class="flex items-center gap-x-3">
+                        <div class="text-4xl">🪚</div>
+                        <div>
+                            <h1 class="text-3xl font-semibold text-amber-900">RestorMate</h1>
+                            <p class="text-amber-500">Professional Restoration</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs uppercase tracking-widest">ESTIMATE</div>
+                        <div class="text-xl font-medium">Date: ${new Date().toLocaleDateString('en-US')}</div>
+                    </div>
                 </div>
-                <div class="mt-6"><span class="font-semibold">${customer}</span> — ${projectName}</div>
-                <div class="my-6 grid grid-cols-4 gap-4 text-center">
-                    <div class="bg-stone-50 p-3 rounded-2xl"><div class="text-xs">HOURS</div><div class="text-2xl font-semibold">${document.getElementById('total-hours').textContent}</div></div>
-                    <div class="bg-stone-50 p-3 rounded-2xl"><div class="text-xs">LABOR</div><div class="text-2xl font-semibold">${document.getElementById('labor-cost').textContent}</div></div>
-                    <div class="bg-stone-50 p-3 rounded-2xl"><div class="text-xs">MATERIALS</div><div class="text-2xl font-semibold">${document.getElementById('materials-cost').textContent}</div></div>
-                    <div class="bg-amber-900 text-white p-3 rounded-2xl"><div class="text-xs">TOTAL</div><div class="text-2xl font-semibold">${document.getElementById('grand-total').textContent}</div></div>
-                </div>`;
 
-            // Add selected tasks summary (simplified)
-            html += `<div class="text-sm"><strong>Work Summary by Bucket</strong></div>`;
-            categories.forEach(cat => {
-                const section = document.getElementById(`cat-${cat.id}`);
-                if (!section) return;
-                let items = [];
-                section.querySelectorAll('tbody tr').forEach(row => {
-                    if (row.querySelector('.include-check')?.checked) {
-                        const h = parseFloat(row.querySelector('.hours-input')?.value) || 0;
-                        if (h > 0) items.push(`${row.querySelector('.task-name')?.textContent || 'Task'} (${h}h)`);
+                <h2 class="text-2xl mb-2">${document.getElementById('customer-name').value || 'Client'} — ${document.getElementById('project-name').value || 'Restoration Project'}</h2>
+                
+                <div class="grid grid-cols-4 gap-4 mb-10">
+                    <div class="bg-amber-50 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-amber-500">HOURS</div>
+                        <div class="text-4xl font-semibold text-amber-900">${document.getElementById('total-hours').textContent}</div>
+                    </div>
+                    <div class="bg-amber-50 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-amber-500">LABOR</div>
+                        <div class="text-4xl font-semibold text-emerald-600">${document.getElementById('total-labor').textContent}</div>
+                    </div>
+                    <div class="bg-amber-50 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-amber-500">MATERIALS</div>
+                        <div class="text-4xl font-semibold text-amber-600">${document.getElementById('total-materials').textContent}</div>
+                    </div>
+                    <div class="bg-amber-700 text-white rounded-2xl p-4 text-center">
+                        <div class="text-xs opacity-75">TOTAL</div>
+                        <div class="text-4xl font-semibold">${document.getElementById('grand-total').textContent}</div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-6 border-b pb-3">Work Summary by Bucket</h3>`
+
+            // Add detailed bucket summaries (like v2 screenshot)
+            bucketsData.forEach(bucket => {
+                let bucketStepsHTML = ''
+                let bucketHours = 0
+
+                bucket.steps.forEach(step => {
+                    const hoursEl = document.getElementById(`hours-${bucket.id}-${step.id}`)
+                    const hrs = hoursEl ? parseFloat(hoursEl.value) || 0 : 0
+                    if (hrs > 0) {
+                        bucketStepsHTML += `<li class="mb-1">${step.label} <span class="font-mono text-xs text-amber-500">(${hrs}hr)</span></li>`
+                        bucketHours += hrs
                     }
-                });
-                if (items.length) html += `<div class="mt-2"><span class="font-medium">${cat.name}:</span> ${items.join(', ')}</div>`;
-            });
+                })
 
-            html += `</div>`;
-            content.innerHTML = html;
-        }
+                if (bucketStepsHTML) {
+                    html += `
+                    <div class="mb-8">
+                        <div class="flex justify-between items-baseline mb-2">
+                            <h4 class="font-medium">${bucket.title}</h4>
+                            <span class="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-3xl">${bucketHours.toFixed(1)} hrs</span>
+                        </div>
+                        <ul class="pl-6 text-sm list-disc">${bucketStepsHTML}</ul>
+                    </div>`
+                }
+            })
 
-        function showPrintPreview() { generatePrintContent(); document.getElementById('print-modal').classList.remove('hidden'); document.getElementById('print-modal').classList.add('flex'); }
-        function hidePrintPreview() { const m = document.getElementById('print-modal'); m.classList.remove('flex'); m.classList.add('hidden'); }
-
-        function initializeApp() {
-            initializeTailwind();
-            renderCategories();
-            
-            const restored = loadFromLocalStorage();
-            if (!restored) {
-                // Seed one procurement example on first load
-                setTimeout(() => {
-                    addProcurementRow({ item: "Example: Matching brass hardware", qty: 1, unitCost: 0 });
-                }, 300);
+            // Procurement summary
+            if (procurementItems.length > 0) {
+                html += `<h4 class="font-medium mb-3">Procurement / Parts to Order</h4><ul class="pl-6 text-sm">`
+                procurementItems.forEach(item => {
+                    const line = (parseFloat(item.qty)||1) * (parseFloat(item.cost)||0)
+                    html += `<li>${item.name} × ${item.qty || 1} — $${line}</li>`
+                })
+                html += `</ul>`
             }
 
-            // Set initial active rate button
-            setTimeout(() => {
-                const rate = parseFloat(document.getElementById('labor-rate').value);
-                document.querySelectorAll('.rate-preset').forEach(btn => {
-                    if (parseInt(btn.textContent) === rate) btn.classList.add('active', 'bg-amber-900', 'text-white', 'border-amber-900');
-                });
-            }, 200);
-
-            console.log('%c[RestorMate v2] Initialized with CSV review insights: search, presets, per-bucket controls, and cleaned task data.', 'color:#166534');
+            html += `</div>`
+            content.innerHTML = html
+            modal.classList.remove('hidden')
+            modal.classList.add('flex')
         }
 
-        window.onload = initializeApp;
+        function hidePreview() {
+            const modal = document.getElementById('preview-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function printPreview() {
+            const content = document.getElementById('preview-content').innerHTML
+            const original = document.body.innerHTML
+            document.body.innerHTML = `
+            <div style="padding: 40px; max-width: 1000px; margin: 0 auto; font-family: system-ui;">
+                ${content}
+            </div>`
+            window.print()
+            document.body.innerHTML = original
+            // Re-init after print (simple)
+            setTimeout(() => location.reload(), 100)
+        }
+
+        // Main init
+        function initializeApp() {
+            initTailwind()
+            createRatePresets()
+            renderBuckets()
+            renderProcurement()
+            calculateTotals()
+
+            // Auto-save on changes (debounced)
+            let timeout
+            document.addEventListener('input', () => {
+                clearTimeout(timeout)
+                timeout = setTimeout(() => {
+                    safeLocalStorageSet('restormate-v3-state', {
+                        bucketsData: bucketsData, // not really saving full data
+                        procurementItems: procurementItems,
+                        projectName: document.getElementById('project-name').value,
+                        customerName: document.getElementById('customer-name').value,
+                        customerEmail: document.getElementById('customer-email').value,
+                        notes: document.getElementById('notes').value
+                    })
+                }, 800)
+            })
+
+            console.log('%c✅ RestorMate v3 ready (inputs zeroed by default, detailed preview restored)', 'color:#d97706; font-weight:600')
+        }
+
+        window.onload = initializeApp
     </script>
 </body>
 </html>
