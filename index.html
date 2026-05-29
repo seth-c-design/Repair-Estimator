@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RestorMate v3.1 • Trello Ready</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        :root { --tw-color-primary: #d97706; }
+        .accordion-header { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .step-row { transition: background-color 0.1s ease; }
+        .step-row:hover { background-color: #fefce8; }
+        .total-card { transition: transform 0.2s ease; }
+    </style>
+</head>
+<body class="bg-amber-50 font-sans">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-amber-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-inner">🪚</div>
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-tight text-amber-900">RestorMate</h1>
+                    <p class="text-amber-600 text-sm -mt-1">v3.1 • Full Process Categories • Trello Ready</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-x-3">
+                <div onclick="loadDemo()" class="flex items-center gap-x-2 px-5 py-3 bg-white border border-amber-200 hover:border-amber-300 rounded-3xl text-amber-700 font-medium cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i><span>Load Demo</span>
+                </div>
+                <div onclick="clearAll()" class="flex items-center gap-x-2 px-5 py-3 bg-white border border-amber-200 hover:border-amber-300 rounded-3xl text-amber-700 font-medium cursor-pointer">
+                    <i class="fa-solid fa-trash-can"></i><span>Clear</span>
+                </div>
+                <div onclick="showPreview()" class="flex items-center gap-x-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-3xl font-semibold cursor-pointer shadow-md">
+                    <i class="fa-solid fa-print"></i><span>Preview & Print</span>
+                </div>
+                <div onclick="showTrelloModal()" class="flex items-center gap-x-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl font-medium cursor-pointer shadow-md">
+                    <i class="fa-solid fa-trello"></i><span>Create Trello Card</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Totals -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" id="totals-bar">
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">ESTIMATED HOURS</p>
+                        <p id="total-hours" class="text-5xl font-semibold text-amber-900 tabular-nums">0.00</p>
+                    </div>
+                    <i class="fa-solid fa-clock text-4xl text-amber-200"></i>
+                </div>
+            </div>
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">LABOR COST</p>
+                        <div class="flex items-baseline gap-x-1">
+                            <p id="total-labor" class="text-5xl font-semibold text-emerald-600">$0</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-dollar-sign text-4xl text-emerald-200"></i>
+                </div>
+                <div class="mt-4 flex gap-x-1 text-xs" id="rate-presets"></div>
+            </div>
+            <div class="total-card bg-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-amber-500 tracking-widest">MATERIALS & PARTS</p>
+                        <p id="total-materials" class="text-5xl font-semibold text-amber-600">$0</p>
+                    </div>
+                    <i class="fa-solid fa-boxes-packing text-4xl text-amber-200"></i>
+                </div>
+            </div>
+            <div class="total-card bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-3xl shadow p-6 border border-amber-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium tracking-widest opacity-75">GRAND TOTAL</p>
+                        <p id="grand-total" class="text-5xl font-semibold">$0</p>
+                    </div>
+                    <i class="fa-solid fa-calculator text-4xl opacity-50"></i>
+                </div>
+                <p id="project-name-top" class="text-amber-100 text-sm mt-6"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-4 space-y-8">
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-6"><i class="fa-solid fa-clipboard-list"></i> Project Details</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-medium text-amber-500 mb-1">PROJECT / ITEM NAME</label>
+                            <input id="project-name" type="text" placeholder="e.g. Mahogany Side Table Restoration" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl text-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-amber-500 mb-1">CUSTOMER NAME</label>
+                                <input id="customer-name" type="text" placeholder="Jane Thompson" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-amber-500 mb-1">EMAIL</label>
+                                <input id="customer-email" type="text" placeholder="jane@email.com" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-amber-500 mb-1">NOTES / SPECIAL INSTRUCTIONS</label>
+                            <textarea id="notes" rows="3" placeholder="Preserve original patina where possible..." class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-3xl"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2 mb-4"><i class="fa-solid fa-truck"></i> Procurement & Parts Planning</h2>
+                    <p class="text-xs text-amber-600 mb-4">Major hardware, veneer, specialty finishes & lead-time items only</p>
+                    <div id="procurement-list" class="space-y-3 mb-6 max-h-80 overflow-auto"></div>
+                    <div class="flex gap-x-3">
+                        <button onclick="addProcurementItem()" class="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-700 px-5 py-3 rounded-3xl text-sm font-medium flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-plus"></i> Add Part to Order
+                        </button>
+                        <button onclick="addCommonHardware()" class="flex-1 bg-white border border-amber-300 hover:border-amber-400 text-amber-700 px-5 py-3 rounded-3xl text-sm font-medium">
+                            Quick Add Common Items
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buckets -->
+            <div class="lg:col-span-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-x-2"><i class="fa-solid fa-list-check"></i> Process Buckets</h2>
+                    <div class="relative flex-1 max-w-xs mx-8">
+                        <input id="global-search" onkeyup="if(event.keyCode===13) filterBuckets()" placeholder="Search steps (sand, veneer, hardware...)" class="w-full pl-10 py-3 border border-amber-200 focus:border-amber-400 rounded-3xl text-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-amber-300"></i>
+                    </div>
+                    <button onclick="clearSearch()" class="text-xs text-amber-500 hover:text-amber-700">Clear filter</button>
+                </div>
+                <div id="buckets-container" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div onclick="if(event.target.id === 'preview-modal') hidePreview()" id="preview-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+            <div class="px-8 py-6 border-b flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold">Client Estimate Preview</h2>
+                    <p class="text-amber-500 text-sm">Print-ready • Grouped by process bucket</p>
+                </div>
+                <div class="flex items-center gap-x-4">
+                    <button onclick="printPreview()" class="flex items-center gap-x-2 px-6 py-2 bg-emerald-600 text-white rounded-3xl hover:bg-emerald-700">
+                        <i class="fa-solid fa-print"></i><span>Print / PDF</span>
+                    </button>
+                    <button onclick="hidePreview()" class="text-amber-500 hover:text-amber-700">Close</button>
+                </div>
+            </div>
+            <div id="preview-content" class="flex-1 p-8 overflow-auto text-sm leading-relaxed"></div>
+        </div>
+    </div>
+
+    <!-- Trello Modal -->
+    <div onclick="if(event.target.id === 'trello-modal') hideTrelloModal()" id="trello-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[10000] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white rounded-3xl max-w-lg w-full p-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trello text-blue-600"></i> Send to Trello</h2>
+            
+            <!-- Credentials (collapsible for cleanliness) -->
+            <details class="mb-4">
+                <summary class="cursor-pointer text-xs font-medium text-amber-500 mb-2 select-none">API Credentials (click to expand)</summary>
+                <div class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-xs font-medium text-amber-500 mb-1">TRELLO API KEY</label>
+                        <input id="trello-key" type="text" value="fe25ec8831a397fd222dc1e348ba4cd4" class="w-full px-4 py-2 border border-amber-200 focus:border-amber-400 rounded-2xl font-mono text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-amber-500 mb-1">TRELLO TOKEN <span class="text-red-500">(this is what usually breaks)</span></label>
+                        <input id="trello-token" type="text" value="" placeholder="Paste the long token here (starts with ATATT...)" class="w-full px-4 py-2 border border-amber-200 focus:border-amber-400 rounded-2xl font-mono text-xs">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Token Help Panel -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs mb-5">
+                <div class="font-semibold text-amber-800 mb-1.5 flex items-center gap-x-2">
+                    <i class="fa-solid fa-key"></i> 
+                    <span>Getting a working Token (this fixes 90% of failures)</span>
+                </div>
+                <ol class="list-decimal ml-5 text-amber-700 space-y-0.5 text-[11px]">
+                    <li>Log into Trello with the account that actually has write access to the board.</li>
+                    <li>Click the button below (it auto-uses whatever API Key you typed above).</li>
+                    <li>On the Trello authorize page, click <strong>"Allow"</strong>.</li>
+                    <li>Copy the giant string it shows you and paste it into the TOKEN field.</li>
+                </ol>
+                <button onclick="openTokenGenerator()" 
+                        class="mt-3 w-full bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-semibold py-2.5 rounded-2xl flex items-center justify-center gap-x-2 transition-colors">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>Generate Proper Token for the Key Above</span>
+                </button>
+                <p class="mt-2 text-[10px] text-amber-600">The <strong>Secret</strong> shown on the API page is <u>not</u> used by this tool. You only need API Key + Token.</p>
+            </div>
+
+            <!-- Dynamic Board & List Selector -->
+            <div class="space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-medium text-amber-500">TRELLO BOARD</label>
+                        <button onclick="loadTrelloBoards()" 
+                                class="text-[10px] px-3 py-1 bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-700 rounded-2xl font-medium flex items-center gap-x-1 transition-colors">
+                            <i class="fa-solid fa-sync fa-xs"></i> <span>Load My Boards</span>
+                        </button>
+                    </div>
+                    <select id="trello-board" onchange="onBoardChange()" 
+                            class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl text-sm bg-white">
+                        <option value="">-- Click "Load My Boards" to populate --</option>
+                    </select>
+                    <p id="board-status" class="text-[10px] text-amber-400 mt-0.5 h-3"></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-amber-500 mb-1">TARGET LIST <span class="text-emerald-600">(where the card will be created)</span></label>
+                    <select id="trello-list" class="w-full px-4 py-3 border border-amber-200 focus:border-amber-400 rounded-2xl text-sm bg-white">
+                        <option value="">-- Select a board first --</option>
+                    </select>
+                    <p class="text-[10px] text-amber-400 mt-0.5">Cards will be added to the bottom of the selected list.</p>
+                </div>
+            </div>
+
+            <button onclick="testTrelloConnection()" 
+                    class="w-full mb-3 py-2 text-xs border border-amber-300 hover:bg-amber-100 active:bg-amber-200 rounded-2xl text-amber-700 font-medium flex items-center justify-center gap-x-2">
+                <i class="fa-solid fa-plug"></i>
+                <span>Test Connection (see exactly what's wrong)</span>
+            </button>
+
+            <div class="flex gap-x-3">
+                <button onclick="saveTrelloConfig()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-3xl font-medium transition-colors">Save Defaults</button>
+                <button onclick="createTrelloCard()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-3xl font-medium shadow-sm transition-colors">Create Card + Checklists</button>
+            </div>
+            <button onclick="hideTrelloModal()" class="mt-5 text-amber-500 hover:text-amber-700 text-sm w-full">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // ====================== 12 FULL CATEGORIES ======================
+        let bucketsData = [
+            { id: "intake-planning", title: "Intake, Assessment & Planning", icon: "🔍", steps: [
+                {id: "visual-assessment", label: "Visual assessment & condition documentation", defaultHours: 0.75},
+                {id: "photographing", label: "Photograph all pieces (overall + details)", defaultHours: 0.5},
+                {id: "inventory-hardware", label: "Inventory existing hardware & components", defaultHours: 0.5},
+                {id: "fabric-samples", label: "Review fabric samples & plan color matching", defaultHours: 0.5},
+                {id: "action-items", label: "Create action item list & preliminary estimate", defaultHours: 0.75},
+                {id: "part-orders", label: "Plan part orders & note lead times", defaultHours: 0.5},
+                {id: "physical-organization", label: "Physical organization, labeling & bucketing pieces", defaultHours: 1},
+                {id: "disassembly", label: "Disassembly of item", defaultHours: 1}
+            ]},
+            { id: "repair", title: "Repair", icon: "🔨", steps: [
+                {id: "veneer-chip-repair", label: "Veneer chip / edge repair", defaultHours: 0},
+                {id: "joint-repair", label: "Joint repair (including epoxy)", defaultHours: 0},
+                {id: "structural-repair", label: "Structural repair / reinforcement", defaultHours: 0},
+                {id: "scrape-glue", label: "Scrape / strip old glue", defaultHours: 0},
+                {id: "ca-glue", label: "CA glue repair (instant adhesives)", defaultHours: 0},
+                {id: "edge-banding-repair", label: "Edge banding repair or replacement", defaultHours: 0},
+                {id: "hardware-repair", label: "Hardware repair or reconditioning", defaultHours: 0},
+                {id: "break-apart-reglue", label: "Break-apart / re-glue structural elements", defaultHours: 0}
+            ]},
+            { id: "modification", title: "Modification", icon: "🛠️", steps: [
+                {id: "reveneer", label: "Reveneer panel or surface", defaultHours: 0},
+                {id: "edge-banding-replace", label: "Replace or repair edge banding", defaultHours: 0},
+                {id: "base-leg-mod", label: "Base or leg modification", defaultHours: 0},
+                {id: "side-panel", label: "Side panel work or replacement", defaultHours: 0},
+                {id: "stability-reinforce", label: "Stability reinforcement", defaultHours: 0}
+            ]},
+            { id: "cleaning", title: "Cleaning", icon: "🧼", steps: [
+                {id: "murphys-soap", label: "Watered-down Murphy's Oil Soap clean", defaultHours: 0},
+                {id: "wax-wash", label: "Wax wash clean", defaultHours: 0},
+                {id: "mineral-spirits", label: "Mineral spirits clean", defaultHours: 0},
+                {id: "goo-gone", label: "Goo Gone / adhesive remover", defaultHours: 0},
+                {id: "metal-polish", label: "Metal polish (hardware)", defaultHours: 0},
+                {id: "general-clean", label: "General soap & water or scrubby clean", defaultHours: 0}
+            ]},
+            { id: "finish-removal", title: "Finish Removal", icon: "🧪", steps: [
+                {id: "scrubby-clean", label: "Scrubby clean (red / purple scrubby)", defaultHours: 0},
+                {id: "manual-scrape", label: "Manual scrape of old finish", defaultHours: 0},
+                {id: "sand-220", label: "220 grit sanding", defaultHours: 0},
+                {id: "sand-320", label: "320 grit sanding", defaultHours: 0},
+                {id: "chemical-strip", label: "Chemical strip / Oxalic acid treatment", defaultHours: 0},
+                {id: "wood-bleach", label: "Wood bleach application", defaultHours: 0},
+                {id: "dent-steaming", label: "Dent steaming", defaultHours: 0}
+            ]},
+            { id: "prep-for-seal", title: "Finish Prep for Seal", icon: "📏", steps: [
+                {id: "sand-220-orbital", label: "220 orbital sand", defaultHours: 0},
+                {id: "sand-220-hand", label: "220 hand sand", defaultHours: 0},
+                {id: "sand-320-orbital", label: "320 orbital sand", defaultHours: 0},
+                {id: "sand-320-hand", label: "320 hand sand", defaultHours: 0},
+                {id: "tape-off", label: "Area tape-off / masking", defaultHours: 0},
+                {id: "red-scrubby", label: "Red scrubby final prep", defaultHours: 0},
+                {id: "purple-scrubby", label: "Purple scrubby final prep", defaultHours: 0}
+            ]},
+            { id: "pre-seal-color", title: "Pre-Seal Color", icon: "🎨", steps: [
+                {id: "dye-tone", label: "Dye tone application", defaultHours: 0},
+                {id: "solvent-stain", label: "Solvent stain", defaultHours: 0},
+                {id: "oil-stain", label: "Oil stain", defaultHours: 0},
+                {id: "vinyl-fill", label: "Vinyl fill / pore filler", defaultHours: 0},
+                {id: "other-coloring", label: "Other pre-seal coloring or toning", defaultHours: 0}
+            ]},
+            { id: "sealing", title: "Sealing", icon: "🛡️", steps: [
+                {id: "vinyl-seal-regular", label: "Vinyl Seal (regular strength)", defaultHours: 0},
+                {id: "vinyl-seal-thin", label: "Vinyl Seal (thin / wash coat)", defaultHours: 0},
+                {id: "spray-shellac", label: "Spray shellac sealer", defaultHours: 0},
+                {id: "wipe-shellac", label: "Wipe-on shellac sealer", defaultHours: 0},
+                {id: "poly-sealer", label: "Polyurethane sealer", defaultHours: 0},
+                {id: "tape-off-seal", label: "Area tape-off for sealing", defaultHours: 0}
+            ]},
+            { id: "intra-finish", title: "Intra-Finish Color & Treatment", icon: "🖌️", steps: [
+                {id: "ngr-toning", label: "NGR toning", defaultHours: 0},
+                {id: "can-toning", label: "Can toning / aerosol toning", defaultHours: 0},
+                {id: "in-painting", label: "In-painting / touch-up coloring", defaultHours: 0},
+                {id: "grain-fill", label: "Grain fill", defaultHours: 0},
+                {id: "glaze", label: "Glaze application", defaultHours: 0},
+                {id: "color-stick", label: "Color stick / Blendal color application", defaultHours: 0}
+            ]},
+            { id: "finish-prep", title: "Final Finish Prep", icon: "✨", steps: [
+                {id: "wax-wash-coats", label: "Wax wash between coats", defaultHours: 0},
+                {id: "sand-400-hand", label: "400 hand sand", defaultHours: 0},
+                {id: "sand-600-hand", label: "600 hand sand", defaultHours: 0},
+                {id: "sand-400-orbital", label: "400 orbital sand", defaultHours: 0},
+                {id: "sand-600-orbital", label: "600 orbital sand", defaultHours: 0}
+            ]},
+            { id: "top-coat", title: "Top Coat", icon: "🖌️", steps: [
+                {id: "pre-cat-lacquer", label: "Pre-catalyzed lacquer (build coats + sheen)", defaultHours: 0, note: "Specify sheen (10/20/40/60/80) in notes"},
+                {id: "post-cat-lacquer", label: "Post-catalyzed lacquer", defaultHours: 0, note: "Specify sheen level"},
+                {id: "polyurethane", label: "Polyurethane top coat", defaultHours: 0},
+                {id: "shellac-top", label: "Shellac top coat (or tinted shellac)", defaultHours: 0},
+                {id: "paint-enamel", label: "Paint or enamel finish", defaultHours: 0},
+                {id: "additional-coat", label: "Additional top coat layer(s)", defaultHours: 0}
+            ]},
+            { id: "assembly-touchup", title: "Assembly, Touch-Up & Final", icon: "🔧", steps: [
+                {id: "install-hardware", label: "Install / re-install hardware", defaultHours: 0},
+                {id: "refit-pieces", label: "Refit pieces & drawers", defaultHours: 0},
+                {id: "drawer-operation", label: "Ensure smooth drawer / door operation", defaultHours: 0},
+                {id: "final-touchup", label: "Final stain & finish touch-up pen work", defaultHours: 0},
+                {id: "final-inspection", label: "Final inspection, cleaning & detailing", defaultHours: 0.75}
+            ]}
+        ];
+
+        let procurementItems = [];
+        let laborRate = 100;
+        let currentFilter = '';
+
+        // Safe localStorage
+        function safeLocalStorageGet(key, defaultValue) {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                }
+            } catch(e) {}
+            return defaultValue;
+        }
+        function safeLocalStorageSet(key, value) {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch(e) {}
+        }
+
+        // Calculate Totals
+        function calculateTotals() {
+            let totalHours = 0, totalMaterials = 0;
+
+            bucketsData.forEach(bucket => {
+                bucket.steps.forEach(step => {
+                    const hoursEl = document.getElementById(`hours-${bucket.id}-${step.id}`);
+                    const matEl = document.getElementById(`mat-${bucket.id}-${step.id}`);
+                    if (hoursEl) totalHours += parseFloat(hoursEl.value) || 0;
+                    if (matEl) totalMaterials += parseFloat(matEl.value) || 0;
+                });
+            });
+
+            procurementItems.forEach(item => {
+                totalMaterials += (parseFloat(item.cost) || 0) * (parseFloat(item.qty) || 1);
+            });
+
+            const laborCost = totalHours * laborRate;
+
+            document.getElementById('total-hours').textContent = totalHours.toFixed(2);
+            document.getElementById('total-labor').textContent = '$' + Math.round(laborCost);
+            document.getElementById('total-materials').textContent = '$' + Math.round(totalMaterials);
+            document.getElementById('grand-total').textContent = '$' + Math.round(laborCost + totalMaterials);
+
+            const projName = document.getElementById('project-name').value || 'Project';
+            document.getElementById('project-name-top').textContent = projName;
+        }
+
+        // Render Buckets (white cards with shadow)
+        function renderBuckets() {
+            const container = document.getElementById('buckets-container');
+            container.innerHTML = '';
+
+            bucketsData.forEach(bucket => {
+                let stepHTML = '';
+                const totalSteps = bucket.steps.length;
+
+                bucket.steps.forEach(step => {
+                    const hoursId = `hours-${bucket.id}-${step.id}`;
+                    const matId = `mat-${bucket.id}-${step.id}`;
+                    const noteId = `note-${bucket.id}-${step.id}`;
+
+                    const matches = !currentFilter || step.label.toLowerCase().includes(currentFilter.toLowerCase());
+                    if (!matches) return;
+
+                    stepHTML += `
+                    <div class="step-row flex items-center gap-x-4 px-5 py-4 border-b last:border-0">
+                        <input type="checkbox" id="check-${bucket.id}-${step.id}" onchange="calculateTotals()" class="w-5 h-5 accent-amber-600">
+                        <div class="flex-1">
+                            <label for="check-${bucket.id}-${step.id}" class="font-medium cursor-pointer">${step.label}</label>
+                            ${step.note ? `<p class="text-xs text-amber-500">${step.note}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-x-6 text-right">
+                            <div>
+                                <span class="text-xs text-amber-400">HOURS</span>
+                                <input id="${hoursId}" type="number" step="0.25" min="0" value="${step.defaultHours || 0}" onchange="calculateTotals()" class="w-20 text-right border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-1 text-lg font-medium">
+                            </div>
+                            <div>
+                                <span class="text-xs text-amber-400">MAT. $</span>
+                                <input id="${matId}" type="number" step="1" min="0" value="0" onchange="calculateTotals()" class="w-20 text-right border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-1 text-lg font-medium">
+                            </div>
+                            <textarea id="${noteId}" rows="1" placeholder="notes..." oninput="calculateTotals()" class="w-56 text-xs border border-amber-200 focus:border-amber-400 rounded-2xl px-3 py-1 resize-none"></textarea>
+                        </div>
+                    </div>`;
+                });
+
+                if (stepHTML === '') return;
+
+                const bucketHTML = `
+                <div class="bg-white rounded-3xl shadow overflow-hidden">
+                    <div onclick="toggleBucket(this)" class="accordion-header px-8 py-5 flex items-center justify-between cursor-pointer bg-amber-50 hover:bg-amber-100 transition-colors">
+                        <div class="flex items-center gap-x-4">
+                            <span class="text-2xl">${bucket.icon}</span>
+                            <div>
+                                <h3 class="font-semibold text-amber-900">${bucket.title}</h3>
+                                <p class="text-xs text-amber-500">${totalSteps} steps</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-x-6">
+                            <div class="text-right">
+                                <div class="flex items-center gap-x-1 text-emerald-600">
+                                    <span id="selected-count-${bucket.id}" class="font-mono text-sm">0/${totalSteps}</span>
+                                </div>
+                            </div>
+                            <i onclick="event.stopImmediatePropagation(); toggleAllInBucket('${bucket.id}');" class="fa-solid fa-check-double text-amber-400 hover:text-amber-600 cursor-pointer"></i>
+                            <i class="fa-solid fa-chevron-down transition-transform"></i>
+                        </div>
+                    </div>
+                    <div class="bucket-content hidden px-2">
+                        ${stepHTML}
+                    </div>
+                </div>`;
+                container.innerHTML += bucketHTML;
+            });
+            calculateTotals();
+        }
+
+        function toggleBucket(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('hidden');
+            const icon = header.querySelector('.fa-chevron-down');
+            if (icon) icon.style.transform = content.classList.contains('hidden') ? '' : 'rotate(180deg)';
+        }
+
+        function toggleAllInBucket(bucketId) {
+            const checks = document.querySelectorAll(`[id^="check-${bucketId}-"]`);
+            const firstChecked = checks[0] ? checks[0].checked : false;
+            checks.forEach(chk => chk.checked = !firstChecked);
+            calculateTotals();
+        }
+
+        function filterBuckets() {
+            currentFilter = document.getElementById('global-search').value;
+            renderBuckets();
+        }
+
+        function clearSearch() {
+            document.getElementById('global-search').value = '';
+            currentFilter = '';
+            renderBuckets();
+        }
+
+        // Procurement functions (same as before)
+        function renderProcurement() {
+            const container = document.getElementById('procurement-list');
+            container.innerHTML = '';
+            procurementItems.forEach((item, index) => {
+                const lineTotal = (parseFloat(item.qty) || 1) * (parseFloat(item.cost) || 0);
+                container.innerHTML += `
+                <div class="flex items-center gap-x-3 bg-amber-50 rounded-2xl p-4">
+                    <input type="text" value="${item.name}" onchange="updateProcurement(${index}, 'name', this.value)" class="flex-1 bg-transparent text-sm font-medium focus:outline-none">
+                    <input type="number" value="${item.qty || 1}" step="1" min="1" onchange="updateProcurement(${index}, 'qty', this.value)" class="w-16 text-center border border-transparent focus:border-amber-300 rounded-xl">
+                    <input type="number" value="${item.cost || 0}" step="1" onchange="updateProcurement(${index}, 'cost', this.value)" class="w-20 text-right border border-transparent focus:border-amber-300 rounded-xl">
+                    <div class="font-semibold text-emerald-600 w-20 text-right">$${(lineTotal).toFixed(0)}</div>
+                    <button onclick="removeProcurementItem(${index})" class="text-red-300 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                </div>`;
+            });
+            if (procurementItems.length === 0) container.innerHTML = `<p class="text-amber-400 italic text-center py-6">No parts added yet</p>`;
+            calculateTotals();
+        }
+
+        function addProcurementItem() { procurementItems.push({name: 'New part', qty: 1, cost: 0}); renderProcurement(); }
+        function updateProcurement(index, field, value) {
+            if (field === 'qty' || field === 'cost') procurementItems[index][field] = parseFloat(value) || 0;
+            else procurementItems[index][field] = value;
+            renderProcurement();
+        }
+        function removeProcurementItem(index) { procurementItems.splice(index, 1); renderProcurement(); }
+
+        function addCommonHardware() {
+            const commons = [
+                {name: 'Brass pulls (set of 4)', qty: 1, cost: 85},
+                {name: 'Veneer sheet (mahogany)', qty: 2, cost: 45},
+                {name: 'Escutcheon plates', qty: 4, cost: 18},
+                {name: 'Drawer slides (pair)', qty: 2, cost: 65}
+            ];
+            procurementItems = [...procurementItems, ...commons];
+            renderProcurement();
+        }
+
+        // Rate presets
+        function createRatePresets() {
+            const container = document.getElementById('rate-presets');
+            const rates = [75, 100, 125, 150];
+            let html = '';
+            rates.forEach(rate => {
+                const active = rate === laborRate ? 'bg-amber-100 text-amber-700 font-semibold' : 'hover:bg-amber-50';
+                html += `<button onclick="setLaborRate(${rate});" class="px-4 py-1 text-xs rounded-3xl ${active}">${rate}</button>`;
+            });
+            container.innerHTML = html;
+        }
+        function setLaborRate(rate) { laborRate = rate; createRatePresets(); calculateTotals(); }
+
+        // Demo & Clear
+        function loadDemo() {
+            if (!confirm('Load demo data?')) return;
+            clearAll(true);
+            document.getElementById('project-name').value = 'Mahogany Federal Style Side Table - Full Restoration';
+            document.getElementById('customer-name').value = 'Robert Kline';
+            document.getElementById('customer-email').value = 'rkline.design@gmail.com';
+            document.getElementById('notes').value = 'Client wants to preserve original patina.';
+            // Demo values are set via renderBuckets defaults + a few manual overrides
+            procurementItems = [{name: 'Period brass bail pulls', qty: 2, cost: 48}, {name: 'Mahogany veneer', qty: 1, cost: 85}];
+            renderProcurement();
+            renderBuckets();
+            calculateTotals();
+        }
+
+        function clearAll(keepDemo = false) {
+            if (!keepDemo && !confirm('Clear everything?')) return;
+            procurementItems = [];
+            document.getElementById('project-name').value = '';
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-email').value = '';
+            document.getElementById('notes').value = '';
+            renderBuckets();
+            renderProcurement();
+            calculateTotals();
+        }
+
+        // Preview (rich client-facing estimate)
+        function showPreview() {
+            const modal = document.getElementById('preview-modal');
+            const content = document.getElementById('preview-content');
+
+            const projectName = document.getElementById('project-name').value || "Restoration Project";
+            const customerName = document.getElementById('customer-name').value || "";
+            const customerEmail = document.getElementById('customer-email').value || "";
+            const notes = document.getElementById('notes').value || "";
+            const totalHours = document.getElementById('total-hours').textContent;
+            const totalLabor = document.getElementById('total-labor').textContent;
+            const totalMaterials = document.getElementById('total-materials').textContent;
+            const grandTotal = document.getElementById('grand-total').textContent;
+
+            let html = `
+                <div class="max-w-3xl mx-auto">
+                    <div class="flex justify-between items-start border-b pb-4 mb-6">
+                        <div>
+                            <h1 class="text-4xl font-semibold tracking-tight text-amber-900">Estimate</h1>
+                            <p class="text-amber-600 mt-1">${projectName}</p>
+                        </div>
+                        <div class="text-right text-sm">
+                            <div class="font-semibold text-emerald-700">${grandTotal}</div>
+                            <div class="text-amber-500 text-xs">TOTAL</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-x-8 text-sm mb-8">
+                        <div>
+                            <div class="uppercase text-amber-500 text-xs tracking-widest mb-1">Client</div>
+                            <div class="font-medium">${customerName || '—'}</div>
+                            ${customerEmail ? `<div class="text-amber-600">${customerEmail}</div>` : ''}
+                        </div>
+                        <div class="text-right">
+                            <div class="uppercase text-amber-500 text-xs tracking-widest mb-1">Summary</div>
+                            <div><span class="font-medium">${totalHours}</span> hours labor</div>
+                            <div>Labor: <span class="font-medium">${totalLabor}</span></div>
+                            <div>Materials: <span class="font-medium">${totalMaterials}</span></div>
+                        </div>
+                    </div>`;
+
+            // Selected work items
+            const checkedRows = document.querySelectorAll('.step-row input[type="checkbox"]:checked');
+            if (checkedRows.length > 0) {
+                html += `<div class="mb-8"><h3 class="font-semibold text-amber-900 mb-3 text-sm uppercase tracking-wider">Selected Work Items</h3><div class="space-y-1.5 text-sm">`;
+                checkedRows.forEach(chk => {
+                    const row = chk.parentElement;
+                    const label = row.querySelector('label')?.textContent.trim() || '';
+                    const nums = row.querySelectorAll('input[type="number"]');
+                    const hrs = nums[0] ? parseFloat(nums[0].value) || 0 : 0;
+                    const mat = nums[1] ? parseFloat(nums[1].value) || 0 : 0;
+                    const note = row.querySelector('textarea')?.value.trim();
+                    let line = `<div class="flex justify-between gap-4"><span>${label}</span>`;
+                    if (hrs || mat) line += `<span class="text-amber-600 tabular-nums text-xs whitespace-nowrap">${hrs ? hrs + 'h' : ''}${hrs && mat ? ' • ' : ''}${mat ? '$' + mat : ''}</span>`;
+                    line += `</div>`;
+                    if (note) line += `<div class="text-xs text-amber-500 pl-1">↳ ${note}</div>`;
+                    html += line;
+                });
+                html += `</div></div>`;
+            }
+
+            // Procurement
+            if (procurementItems.length > 0) {
+                html += `<div class="mb-8"><h3 class="font-semibold text-amber-900 mb-3 text-sm uppercase tracking-wider">Parts &amp; Materials to Order</h3>`;
+                html += `<table class="w-full text-sm"><tbody>`;
+                procurementItems.forEach(item => {
+                    const lineTotal = (item.qty || 1) * (item.cost || 0);
+                    html += `<tr><td class="py-0.5">${item.name}</td><td class="text-right tabular-nums">×${item.qty || 1}</td><td class="text-right w-20 font-medium">$${lineTotal.toFixed(0)}</td></tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+
+            if (notes) {
+                html += `<div><h3 class="font-semibold text-amber-900 mb-2 text-sm uppercase tracking-wider">Notes / Special Instructions</h3><p class="text-sm text-amber-700 whitespace-pre-wrap">${notes}</p></div>`;
+            }
+
+            html += `</div>`;
+            content.innerHTML = html;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        function hidePreview() {
+            const modal = document.getElementById('preview-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+        function printPreview() { window.print(); }
+
+        // ====================== TRELLO INTEGRATION (Dynamic Lists) ======================
+        let trelloBoardsCache = [];
+        let trelloListsCache = [];
+
+        function loadTrelloConfig() {
+            // Load saved credentials or defaults
+            const savedKey = safeLocalStorageGet('trelloKey', "fe25ec8831a397fd222dc1e348ba4cd4");
+            const savedToken = safeLocalStorageGet('trelloToken', "");   // start empty so people are forced to put in a working one
+            const savedBoardId = safeLocalStorageGet('trelloBoardId', '');
+            const savedListId = safeLocalStorageGet('trelloListId', '');
+
+            document.getElementById('trello-key').value = savedKey;
+            document.getElementById('trello-token').value = savedToken;
+
+            // If we have a previously used board, we will try to restore it after boards load
+            window._pendingBoardId = savedBoardId;
+            window._pendingListId = savedListId;
+        }
+
+        function saveTrelloConfig() {
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            const boardId = document.getElementById('trello-board').value;
+            const listId = document.getElementById('trello-list').value;
+
+            safeLocalStorageSet('trelloKey', key);
+            safeLocalStorageSet('trelloToken', token);
+            if (boardId) safeLocalStorageSet('trelloBoardId', boardId);
+            if (listId) safeLocalStorageSet('trelloListId', listId);
+
+            alert("✅ Defaults saved! Board + List selections will be remembered.");
+        }
+
+        function showTrelloModal() {
+            loadTrelloConfig();
+            const modal = document.getElementById('trello-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Auto-attempt to load boards if we have credentials (non-blocking)
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            if (key && token && key.length > 10) {
+                // Small delay so modal is visible first
+                setTimeout(() => {
+                    if (!trelloBoardsCache.length) loadTrelloBoards(true /*silent*/);
+                }, 420);
+            }
+        }
+
+        function hideTrelloModal() {
+            const modal = document.getElementById('trello-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openTokenGenerator() {
+            const key = document.getElementById('trello-key').value.trim();
+            if (!key || key.length < 10) {
+                alert("Please enter a valid Trello API Key first (the one from trello.com/app-key).");
+                return;
+            }
+            // This is the official way to generate a token with read+write scope
+            const url = `https://trello.com/1/authorize?expiration=never&name=RestorMate%20Repair%20Shop&scope=read,write&response_type=token&key=${encodeURIComponent(key)}`;
+            window.open(url, '_blank', 'width=600,height=700');
+        }
+
+        async function testTrelloConnection() {
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            const statusEl = document.getElementById('board-status');
+
+            if (!key || !token) {
+                alert("Please enter both API Key and Token first.");
+                return;
+            }
+
+            if (statusEl) statusEl.textContent = 'Testing connection...';
+
+            try {
+                // Test 1: Can we talk to Trello at all with this token?
+                const meRes = await fetch(`https://api.trello.com/1/members/me?key=${key}&token=${token}&fields=fullName,username`);
+                
+                if (meRes.status === 401 || meRes.status === 403) {
+                    throw new Error('INVALID_TOKEN');
+                }
+                if (!meRes.ok) {
+                    throw new Error(`HTTP_${meRes.status}`);
+                }
+
+                const me = await meRes.json();
+                
+                // Test 2: Can we see boards?
+                const boardsRes = await fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${token}&fields=name,closed&lists=none`);
+                const boards = await boardsRes.json();
+                const openBoards = boards.filter(b => !b.closed);
+
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="text-emerald-600 font-medium">✅ Connected as ${me.fullName || me.username}</span> — sees ${openBoards.length} board(s)`;
+                }
+
+                // If we got here, the credentials are basically good. Offer to load boards.
+                if (confirm(`✅ Connection successful!\n\nLogged in as: ${me.fullName || me.username}\nYou can see ${openBoards.length} open board(s).\n\nLoad the boards into the dropdown now?`)) {
+                    await loadTrelloBoards();
+                }
+
+            } catch (e) {
+                console.error('Trello connection test failed:', e);
+                let msg = '';
+                if (e.message === 'INVALID_TOKEN') {
+                    msg = '❌ Invalid or expired Token.\n\nThis is the #1 problem. Click "Generate Proper Token" and get a fresh one while logged in as the correct Trello account.';
+                } else if (e.message.includes('403')) {
+                    msg = '❌ Token is valid but has no permission.\n\nThe Trello account this token belongs to probably does not have write access to the boards you care about (common if you are only a guest/observer on the board).';
+                } else {
+                    msg = `❌ Connection failed: ${e.message}\n\nCheck console (F12) for details.`;
+                }
+                if (statusEl) statusEl.textContent = 'Connection test failed — see message';
+                alert(msg);
+            }
+        }
+
+        async function loadTrelloBoards(silent = false) {
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            const statusEl = document.getElementById('board-status');
+
+            if (!key || !token) {
+                alert("Please enter your Trello API Key and Token first.");
+                return;
+            }
+
+            if (statusEl) statusEl.textContent = 'Loading boards...';
+            const boardSelect = document.getElementById('trello-board');
+            boardSelect.innerHTML = '<option value="">Loading your boards...</option>';
+
+            try {
+                const res = await fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${token}&fields=name,closed&lists=none`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const boards = await res.json();
+                trelloBoardsCache = boards.filter(b => !b.closed);
+
+                boardSelect.innerHTML = '<option value="">-- Select a Board --</option>';
+                trelloBoardsCache.forEach(board => {
+                    const opt = document.createElement('option');
+                    opt.value = board.id;
+                    opt.textContent = board.name;
+                    boardSelect.appendChild(opt);
+                });
+
+                if (statusEl) statusEl.textContent = `${trelloBoardsCache.length} boards loaded`;
+
+                // Restore previously selected board if present
+                const pending = window._pendingBoardId;
+                if (pending && trelloBoardsCache.some(b => b.id === pending)) {
+                    boardSelect.value = pending;
+                    // Load its lists automatically
+                    await loadTrelloListsForBoard(true);
+                } else if (statusEl) {
+                    statusEl.textContent = `${trelloBoardsCache.length} boards loaded — pick one to see its lists`;
+                }
+
+            } catch (e) {
+                console.error('Trello boards fetch failed:', e);
+                boardSelect.innerHTML = '<option value="">Failed to load boards</option>';
+                if (statusEl) statusEl.textContent = 'Failed to load boards';
+                
+                let friendly = "❌ Could not load your boards.";
+                if (e.message && e.message.includes('401')) {
+                    friendly = "❌ Invalid/expired Token. Click 'Generate Proper Token' and get a fresh one.";
+                } else if (e.message && e.message.includes('403')) {
+                    friendly = "❌ Token works but this account can't see boards (permission issue).";
+                }
+                if (!silent) alert(friendly + "\n\nUse the 'Test Connection' button for exact diagnosis.");
+            }
+        }
+
+        async function loadTrelloListsForBoard(silent = false) {
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            const boardId = document.getElementById('trello-board').value;
+            const listSelect = document.getElementById('trello-list');
+            const statusEl = document.getElementById('board-status');
+
+            listSelect.innerHTML = '<option value="">Loading lists...</option>';
+            trelloListsCache = [];
+
+            if (!boardId) {
+                listSelect.innerHTML = '<option value="">-- Select a board first --</option>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${key}&token=${token}&fields=name,closed`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const lists = await res.json();
+                trelloListsCache = lists.filter(l => !l.closed);
+
+                listSelect.innerHTML = '';
+                if (trelloListsCache.length === 0) {
+                    listSelect.innerHTML = '<option value="">No open lists on this board</option>';
+                    return;
+                }
+
+                trelloListsCache.forEach(list => {
+                    const opt = document.createElement('option');
+                    opt.value = list.id;
+                    opt.textContent = list.name;
+                    listSelect.appendChild(opt);
+                });
+
+                // Try to restore last used list for this board
+                const pendingList = window._pendingListId;
+                if (pendingList && trelloListsCache.some(l => l.id === pendingList)) {
+                    listSelect.value = pendingList;
+                }
+
+                if (statusEl) statusEl.textContent = `${trelloListsCache.length} lists loaded for this board`;
+
+            } catch (e) {
+                console.error('Trello lists fetch failed:', e);
+                listSelect.innerHTML = '<option value="">Error loading lists</option>';
+                let msg = "❌ Failed to load lists for this board.";
+                if (e.message && (e.message.includes('401') || e.message.includes('403'))) {
+                    msg = "❌ Your token doesn't have permission to see lists on this board.\n\nCommon cause: the Trello account is only a guest/observer on this board and can't create cards.";
+                }
+                if (!silent) alert(msg + "\n\nUse the Test Connection button or ask the board owner to add your account as a full member.");
+            }
+        }
+
+        function onBoardChange() {
+            // When user manually changes board, load its lists
+            loadTrelloListsForBoard();
+        }
+
+        async function createTrelloCard() {
+            const key = document.getElementById('trello-key').value.trim();
+            const token = document.getElementById('trello-token').value.trim();
+            const listId = document.getElementById('trello-list').value.trim();
+            const boardId = document.getElementById('trello-board').value;
+
+            if (!key || !token || !listId) {
+                alert("❌ Please select a Board and a Target List (or enter credentials).");
+                return;
+            }
+
+            const projectName = document.getElementById('project-name').value || "Untitled Project";
+            const customerName = document.getElementById('customer-name').value || "Client";
+            const notes = document.getElementById('notes').value || "";
+            const totalHours = document.getElementById('total-hours').textContent;
+            const totalLabor = document.getElementById('total-labor').textContent;
+            const totalMaterials = document.getElementById('total-materials').textContent;
+            const grandTotal = document.getElementById('grand-total').textContent;
+
+            // Build rich description
+            let desc = `**${projectName}**\n`;
+            desc += `**Customer:** ${customerName}\n\n`;
+            desc += `**Estimate Summary**\n`;
+            desc += `- Hours: ${totalHours}\n- Labor: ${totalLabor}\n- Materials/Parts: ${totalMaterials}\n- **Grand Total: ${grandTotal}**\n\n`;
+            if (notes) desc += `**Special Instructions / Notes:**\n${notes}\n\n`;
+
+            // Collect selected work + materials from steps
+            const selectedWork = [];
+            const stepMaterials = [];
+            document.querySelectorAll('.step-row input[type="checkbox"]:checked').forEach(chk => {
+                const row = chk.parentElement;
+                const label = row.querySelector('label')?.textContent.trim() || 'Task';
+                const numInputs = row.querySelectorAll('input[type="number"]');
+                const hours = numInputs[0] ? parseFloat(numInputs[0].value) || 0 : 0;
+                const matCost = numInputs[1] ? parseFloat(numInputs[1].value) || 0 : 0;
+                const noteEl = row.querySelector('textarea');
+                const noteText = noteEl && noteEl.value.trim() ? ` — ${noteEl.value.trim()}` : '';
+
+                let line = label;
+                if (hours > 0 || matCost > 0) {
+                    line += ` (${hours > 0 ? hours + ' hrs' : ''}${hours > 0 && matCost > 0 ? ', ' : ''}${matCost > 0 ? '$' + matCost + ' mat' : ''})`;
+                }
+                if (noteText) line += noteText;
+
+                selectedWork.push(line);
+
+                if (matCost > 0) {
+                    stepMaterials.push(`${label}: $${matCost}`);
+                }
+            });
+
+            if (selectedWork.length > 0) {
+                desc += `**Selected Work Items (${selectedWork.length}):**\n`;
+                selectedWork.forEach(w => desc += `- ${w}\n`);
+                desc += `\n`;
+            }
+
+            // Procurement
+            if (procurementItems.length > 0) {
+                desc += `**Parts / Procurement to Order (${procurementItems.length}):**\n`;
+                procurementItems.forEach(i => {
+                    const lineTotal = (i.qty || 1) * (i.cost || 0);
+                    desc += `- ${i.name} × ${i.qty || 1} = $${lineTotal.toFixed(0)}\n`;
+                });
+                desc += `\n`;
+            }
+
+            desc += `---\n*Created via RestorMate intake form*`;
+
+            try {
+                // 1. Create the card
+                const cardRes = await fetch(`https://api.trello.com/1/cards?key=${key}&token=${token}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: `${projectName} — ${customerName}`,
+                        desc: desc,
+                        idList: listId,
+                        pos: 'bottom'
+                    })
+                });
+
+                if (!cardRes.ok) {
+                    const errText = await cardRes.text();
+                    throw new Error(`Card creation failed: ${cardRes.status} ${errText}`);
+                }
+                const card = await cardRes.json();
+
+                // 2. Create "Work Items" checklist (the selected process steps)
+                if (selectedWork.length > 0) {
+                    const workClRes = await fetch(`https://api.trello.com/1/checklists?key=${key}&token=${token}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idCard: card.id, name: "🔧 Work Items / Process Steps" })
+                    });
+                    const workChecklist = await workClRes.json();
+
+                    for (const itemText of selectedWork) {
+                        await fetch(`https://api.trello.com/1/checklists/${workChecklist.id}/checkItems?key=${key}&token=${token}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: itemText })
+                        });
+                    }
+                }
+
+                // 3. Create "Materials & Parts" checklist
+                const allMaterials = [...stepMaterials];
+                procurementItems.forEach(i => {
+                    const lineTotal = (i.qty || 1) * (i.cost || 0);
+                    allMaterials.push(`${i.name} × ${i.qty || 1} — $${lineTotal.toFixed(0)}`);
+                });
+
+                if (allMaterials.length > 0) {
+                    const matClRes = await fetch(`https://api.trello.com/1/checklists?key=${key}&token=${token}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idCard: card.id, name: "📦 Materials & Parts to Order" })
+                    });
+                    const matChecklist = await matClRes.json();
+
+                    for (const matLine of allMaterials) {
+                        await fetch(`https://api.trello.com/1/checklists/${matChecklist.id}/checkItems?key=${key}&token=${token}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: matLine })
+                        });
+                    }
+                }
+
+                // Save the successful selection for next time
+                if (boardId) safeLocalStorageSet('trelloBoardId', boardId);
+                if (listId) safeLocalStorageSet('trelloListId', listId);
+
+                alert(`✅ Trello card created!\n\nBoard + List remembered for next time.\n\nLink: https://trello.com/c/${card.shortLink}`);
+                hideTrelloModal();
+
+            } catch (e) {
+                console.error('Card creation failed:', e);
+                
+                let friendlyMessage = `❌ Failed to create the Trello card.\n\n`;
+                
+                const errStr = (e.message || '').toLowerCase();
+                
+                if (errStr.includes('401') || errStr.includes('invalid') || errStr.includes('unauthorized')) {
+                    friendlyMessage += `Your Token is invalid or expired.\n\n→ Click "Generate Proper Token" and get a fresh one while logged into the correct Trello account.`;
+                } else if (errStr.includes('403') || errStr.includes('permission') || errStr.includes('forbidden')) {
+                    friendlyMessage += `Permission denied on that board/list.\n\n→ The Trello account for this token is probably only a "guest" or observer on the board and does not have write access.\n\nSolution: Have the board owner add that Trello account as a full member (or generate the Token from an account that already has write access).`;
+                } else if (errStr.includes('404')) {
+                    friendlyMessage += `Board or List not found. Double-check you selected a valid list from the dropdown.`;
+                } else {
+                    friendlyMessage += `${e.message || 'Unknown error'}\n\nCheck the browser console (F12) for the full technical error.`;
+                }
+                
+                friendlyMessage += `\n\nTip: Click the "Test Connection" button first — it gives much clearer diagnostics.`;
+                
+                alert(friendlyMessage);
+            }
+        }
+
+        // Main init
+        function initializeApp() {
+            createRatePresets();
+            renderBuckets();
+            renderProcurement();
+            calculateTotals();
+            loadTrelloConfig();
+            console.log('%c✅ RestorMate loaded. Use "Test Connection" + "Generate Token" buttons in the Trello modal if you have permission issues.', 'color:#10b981; font-weight:600');
+        }
+
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
